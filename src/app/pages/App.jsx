@@ -11,11 +11,19 @@ import CheckCircle from '../../../public/res/svg/toast/check-circle.svg?react'
 import Error from '../../../public/res/svg/toast/error.svg?react'
 import InfoTip from '../../../public/res/svg/toast/info.svg?react'
 
+import { WalletContextProvider } from '../components/aptos/WalletContext'
+import { TestPage } from './Test'
+
 const router = createBrowserRouter(
   [
     {
       path: '/',
       element: <MainPage />,
+      errorElement: <NotFoundErrorPage />,
+    },
+    {
+      path: '/test',
+      element: <TestPage />,
       errorElement: <NotFoundErrorPage />,
     },
   ],
@@ -38,7 +46,9 @@ function App() {
           >
             <SnackbarUtilsConfigurator />
             <Provider>
-              <RouterProvider router={router} />
+              <WalletContextProvider>
+                <RouterProvider router={router} />
+              </WalletContextProvider>
             </Provider>
           </SnackbarProvider>
         </AppGlobalStyles>

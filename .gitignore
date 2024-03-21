@@ -1,0 +1,6 @@
+experiment
+dist
+node_modules
+devAssets
+/.idea
+.DS_Store

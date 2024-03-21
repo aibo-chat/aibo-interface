@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "sourceMap": true,
+    "jsx": "react",
+    "target": "ES2016",
+    "module": "ES2020",
+    "allowJs": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": ["vite-plugin-svgr/client"]
+  },
+  "exclude": ["node_modules", "dist"],
+  "include": ["src"]
+}

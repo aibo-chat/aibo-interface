@@ -74,8 +74,12 @@ const WalletView = (wallet: Wallet) => {
         disabled={!isWalletReady}
         key={wallet.name}
         onClick={() => onWalletConnectRequest(wallet.name)}
+        style={{
+          margin: '0 24px',
+          color: !isWalletReady ? 'red' : 'green'
+        }}
       >
-        <>{wallet.name}</>
+        <>{wallet.name} Wallet</>
       </button>
     );
   }

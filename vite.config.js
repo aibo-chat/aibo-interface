@@ -4,8 +4,7 @@ import svgr from 'vite-plugin-svgr'
 import { wasm } from '@rollup/plugin-wasm'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
-import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
-import inject from '@rollup/plugin-inject'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 const copyFiles = {
   targets: [
@@ -44,28 +43,30 @@ export default defineConfig({
     port: 8080,
     host: true,
   },
-  plugins: [viteStaticCopy(copyFiles), vanillaExtractPlugin(), wasm(), react(), svgr()],
-  resolve: {
-    alias: {
-      process: 'process/browser',
-      stream: 'stream-browserify',
-      zlib: 'browserify-zlib',
-      util: 'util',
-      buffer: 'rollup-plugin-node-polyfills/polyfills/buffer-es6', // add buffer
-    },
-  },
+  plugins: [
+    nodePolyfills({
+      exclude: [],
+      protocolImports: true,
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
+      overrides: {
+        fs: 'memfs',
+      },
+    }), // 添加这行
+    viteStaticCopy(copyFiles),
+    vanillaExtractPlugin(),
+    wasm(),
+    react(),
+    svgr(),
+  ],
   optimizeDeps: {
     esbuildOptions: {
       define: {
         global: 'globalThis',
       },
-      plugins: [
-        // Enable esbuild polyfill plugins
-        NodeGlobalsPolyfillPlugin({
-          process: false,
-          buffer: true,
-        }),
-      ],
     },
   },
   build: {
@@ -73,8 +74,5 @@ export default defineConfig({
     sourcemap: false,
     copyPublicDir: false,
     manifest: true,
-    rollupOptions: {
-      plugins: [inject({ Buffer: ['buffer', 'Buffer'], Buffer2: ['Buffer', 'Buffer'] })],
-    },
   },
 })

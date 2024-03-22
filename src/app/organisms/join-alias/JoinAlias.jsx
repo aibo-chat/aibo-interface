@@ -16,8 +16,8 @@ import Spinner from '../../atoms/spinner/Spinner';
 import Dialog from '../../molecules/dialog/Dialog';
 
 import CrossIC from '../../../../public/res/ic/outlined/cross.svg';
-const defaultHomeServer = import.meta.env.VITE_MATRIX_HOME_SERVER
 import { useStore } from '../../hooks/useStore';
+import {MatrixHomeServer} from "../../../constant";
 
 const ALIAS_OR_ID_REG = /^[#|!].+:.+\..+$/;
 
@@ -51,7 +51,7 @@ function JoinAliasContent({ term, requestClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     mountStore.setItem(true);
-    const alias = e.target.alias.value + ":" + defaultHomeServer;
+    const alias = e.target.alias.value + ":" + MatrixHomeServer;
     if (alias?.trim() === '') return;
     if (alias.match(ALIAS_OR_ID_REG) === null) {
       setError('Invalid address.');

@@ -97,8 +97,6 @@ interface IGroupConfigResponse {
 export default class AppStore {
   rootStore: Store
 
-  count = 0
-
   userAccount: IAccountDataResponse | null = null
 
   isAppLoading = true
@@ -119,8 +117,6 @@ export default class AppStore {
       rootStore: observable,
       resetStore: action,
       hydrate: action,
-      count: observable,
-      setCount: action,
       initUserData: flow.bound,
       userAccount: observable,
       isAppLoading: observable,
@@ -149,17 +145,12 @@ export default class AppStore {
   }
 
   resetStore = () => {
-    this.count = 0
     this.userAccount = null
     this.isAppLoading = true
     this.connectError = ''
     this.setPasswordModalOpen = false
     this.onPasswordModalConfirm = null
     this.groupConditionsConfig = []
-  }
-
-  setCount = (newValue: number) => {
-    this.count = newValue
   }
 
   changeIsAppLoading = (newValue: boolean) => {
@@ -403,29 +394,30 @@ export default class AppStore {
   }
 
   *initUserData(targetProxy?: string) {
-    try {
-      const result: AxiosResponse<IResponseType<IAccountDataResponse>> = yield request.get(defedApi.getAccountData)
-      console.log('initUserData', result, targetProxy)
-      if (!result?.data?.data?.proxyAddress) {
-        return
-      }
-      if (targetProxy && result.data.data.proxyAddress !== targetProxy) {
-        yield initMatrix.logout()
-        return window.location.replace(`${window.location.origin}/?loginWay=defed`)
-      }
-      this.userAccount = result.data.data
-      yield this.dealWithSecurityKey()
-    } catch (e) {
-      console.error('initUserData Error:', e)
-      if ((e as Error)?.message !== 'Your access token is expired. Please login again.') {
-        return this.setConnectError('InitUserData Error')
-      }
-      yield initMatrix.logout()
-      return window.location.replace(`${import.meta.env.VITE_DEFED_FINANCE_URL}`)
-    }
-    if (!isProduction) {
-      window.changeDeveloperMode = this.changeDeveloperMode
-    }
+    return this.changeIsAppLoading(false)
+    // try {
+    //   const result: AxiosResponse<IResponseType<IAccountDataResponse>> = yield request.get(defedApi.getAccountData)
+    //   console.log('initUserData', result, targetProxy)
+    //   if (!result?.data?.data?.proxyAddress) {
+    //     return
+    //   }
+    //   if (targetProxy && result.data.data.proxyAddress !== targetProxy) {
+    //     yield initMatrix.logout()
+    //     return window.location.replace(`${window.location.origin}/?loginWay=defed`)
+    //   }
+    //   this.userAccount = result.data.data
+    //   yield this.dealWithSecurityKey()
+    // } catch (e) {
+    //   console.error('initUserData Error:', e)
+    //   if ((e as Error)?.message !== 'Your access token is expired. Please login again.') {
+    //     return this.setConnectError('InitUserData Error')
+    //   }
+    //   yield initMatrix.logout()
+    //   return window.location.replace(`${import.meta.env.VITE_DEFED_FINANCE_URL}`)
+    // }
+    // if (!isProduction) {
+    //   window.changeDeveloperMode = this.changeDeveloperMode
+    // }
   }
 
   changeSetPasswordModalOpen = (newValue: boolean) => {

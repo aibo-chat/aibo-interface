@@ -3,14 +3,11 @@ import PropTypes from 'prop-types'
 import './Auth.scss'
 import ReCAPTCHA from 'react-google-recaptcha'
 import { Formik } from 'formik'
-
 import { observer } from 'mobx-react-lite'
-import { useSearchParams } from 'react-router-dom'
 import * as auth from '../../../client/action/auth'
 import cons from '../../../client/state/cons'
 import { Debounce, getUrlPrams } from '../../../util/common'
 import { getBaseUrl } from '../../../util/matrixUtil'
-
 import Text from '../../atoms/text/Text'
 import Button from '../../atoms/button/Button'
 import IconButton from '../../atoms/button/IconButton'
@@ -20,15 +17,12 @@ import ScrollView from '../../atoms/scroll/ScrollView'
 import Header, { TitleWrapper } from '../../atoms/header/Header'
 import Avatar from '../../atoms/avatar/Avatar'
 import ContextMenu, { MenuItem, MenuHeader } from '../../atoms/context-menu/ContextMenu'
-
 import ChevronBottomIC from '../../../../public/res/ic/outlined/chevron-bottom.svg'
 import EyeIC from '../../../../public/res/ic/outlined/eye.svg'
 import EyeBlindIC from '../../../../public/res/ic/outlined/eye-blind.svg'
 import CinnySvg from '../../../../public/res/svg/cinny.svg'
 import SSOButtons from '../../molecules/sso-buttons/SSOButtons'
-import { useMobxStore } from '../../../stores/StoreProvider'
-import { startSsoLogin } from '../../../client/action/auth'
-import ClientLoading from '../client/ClientLoading'
+import {MatrixHomeServer} from "../../../constant";
 
 const LOCALPART_SIGNUP_REGEX = /^[a-z0-9_\-.=/]+$/
 const BAD_LOCALPART_ERROR = "Username can only contain characters a-z, 0-9, or '=_-./'"
@@ -94,9 +88,9 @@ function HomeServer({ onChange }) {
     const link = window.location.origin
     const configFileUrl = `${link}${link[link.length - 1] === '/' ? '' : '/'}config.json`
     try {
-      const result = await (await fetch(configFileUrl, { method: 'GET' })).json()
-      const selectedHs = result?.defaultHomeserver
-      const defaultHomeServer = import.meta.env.VITE_MATRIX_HOME_SERVER
+      const result = await (await fetch(configFileUrl, { method: 'GET' })).json();
+      const selectedHs = result?.defaultHomeserver;
+      const defaultHomeServer = MatrixHomeServer
       if (!defaultHomeServer) {
         console.error('没有配置matrix-home-server')
         return
@@ -167,9 +161,6 @@ HomeServer.propTypes = {
 }
 
 const Login = observer(({ loginFlow, baseUrl }) => {
-  const {
-    appStore: { count, setCount },
-  } = useMobxStore()
   const [typeIndex, setTypeIndex] = useState(0)
   const [passVisible, setPassVisible] = useState(false)
   const loginTypes = ['Username', 'Email']
@@ -220,12 +211,9 @@ const Login = observer(({ loginFlow, baseUrl }) => {
     <>
       <div
         className="auth-form__heading"
-        onClick={() => {
-          setCount(count + 1)
-        }}
       >
         <Text variant="h2" weight="medium">
-          Login{count}
+          Login
         </Text>
         {isPassword && (
           <ContextMenu
@@ -537,23 +525,6 @@ Register.propTypes = {
 function AuthCard() {
   const [hsConfig, setHsConfig] = useState(null)
   const [type, setType] = useState('login')
-  const [searchParams] = useSearchParams()
-
-  const autoLoginWithSearchParams = async () => {
-    if (hsConfig && searchParams.get('loginWay')) {
-      const ssoProviders = hsConfig.login?.flows?.filter((flow) => flow.type === 'm.login.sso')[0]
-      if (ssoProviders?.identity_providers?.length) {
-        const loginWay = searchParams.get('loginWay')
-        const targetSsoLoginWay = ssoProviders.identity_providers.find((idp) => idp?.brand === loginWay)
-        if (targetSsoLoginWay) {
-          await startSsoLogin(hsConfig.baseUrl, 'sso', targetSsoLoginWay.id)
-        }
-      }
-    }
-  }
-  useEffect(() => {
-    autoLoginWithSearchParams()
-  }, [hsConfig])
   const handleHsChange = (info) => {
     setHsConfig(info)
   }
@@ -583,10 +554,6 @@ function Auth() {
   const [loginToken, setLoginToken] = useState(getUrlPrams('loginToken'))
 
   const init = async () => {
-    const loginWay = getUrlPrams('loginWay')
-    if (!loginToken && !loginWay) {
-      return window.location.replace(`${import.meta.env.VITE_DEFED_FINANCE_URL}`)
-    }
     if (localStorage.getItem(cons.secretKey.BASE_URL) === undefined) {
       setLoginToken(null)
       return
@@ -606,14 +573,8 @@ function Auth() {
   }, [])
 
   return (
-    <ScrollView invisible={false}>
-      <ClientLoading loadingMsg="loading" />
-      <div
-        className="auth__base"
-        style={{
-          visibility: 'hidden',
-        }}
-      >
+    <ScrollView invisible>
+      <div className="auth__base">
         <div className="auth__wrapper">
           {/* eslint-disable-next-line no-use-before-define */}
           {loginToken && <LoadingScreen message="Redirecting..." />}

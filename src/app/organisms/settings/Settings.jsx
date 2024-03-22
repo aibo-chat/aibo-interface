@@ -479,11 +479,9 @@ function Settings() {
       }
       contentOptions={
         <>
-          {developerMode ? (
-            <Button variant="danger" iconSrc={PowerIC} onClick={handleLogout}>
-              Logout
-            </Button>
-          ) : null}
+          <Button variant="danger" iconSrc={PowerIC} onClick={handleLogout}>
+            Logout
+          </Button>
           <IconButton src={CrossIC} onClick={requestClose} tooltip="Close" />
         </>
       }

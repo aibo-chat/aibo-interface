@@ -27,7 +27,7 @@
     "@ethersproject/units": "5.7.0",
     "@fontsource/inter": "4.5.14",
     "@khanacademy/simple-markdown": "0.8.6",
-    "@matrix-org/olm": "3.2.14",
+    "@matrix-org/olm": "3.2.15",
     "@metamask/eth-sig-util": "7.0.0",
     "@mui/icons-material": "5.14.14",
     "@mui/material": "5.14.14",

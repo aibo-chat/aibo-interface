@@ -1,5 +1,6 @@
 import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-react";
 import { aptosClient } from "./utils";
+import { AptosUserAssetData } from "./type";
 
 export function useTransaction() {
   const {
@@ -46,6 +47,7 @@ export function useTransaction() {
     try {
       const response = await signAndSubmitTransaction(transaction);
       await aptosClient(network?.name.toLowerCase()).waitForTransaction({ transactionHash: response.hash });
+      //交易成功 => 返回结果
       return response;
     } catch (error) {
       throw error;

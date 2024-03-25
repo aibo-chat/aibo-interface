@@ -166,6 +166,7 @@ const Login = observer(({ loginFlow, baseUrl }) => {
   const loginTypes = ['Username', 'Email']
   const isPassword = loginFlow?.filter((flow) => flow.type === 'm.login.password')[0]
   const ssoProviders = loginFlow?.filter((flow) => flow.type === 'm.login.sso')[0]
+  console.log('ssoProviders', ssoProviders)
 
   const initialValues = {
     username: '',

@@ -46,7 +46,7 @@ enum MatrixApi {
   // 获取用户加密后的RoomKey
   listMatrixRoomKey = 'defed/matrix/listMatrixRoomKey',
   // 获取AiBot列表
-  listMatrixBot = 'defed/matrixbot/bot/list',
+  listMatrixBot = 'aibo/matrix/bot/list',
 }
 
 export default MatrixApi

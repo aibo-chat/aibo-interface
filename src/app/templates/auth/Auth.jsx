@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import './Auth.scss'
 import ReCAPTCHA from 'react-google-recaptcha'
-import { Formik } from 'formik'
+import { gsap } from 'gsap'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { observer } from 'mobx-react-lite'
+import { Box, ButtonBase, Button as MUIButton } from '@mui/material'
 import * as auth from '../../../client/action/auth'
 import cons from '../../../client/state/cons'
 import { Debounce, getUrlPrams } from '../../../util/common'
@@ -11,18 +13,20 @@ import { getBaseUrl } from '../../../util/matrixUtil'
 import Text from '../../atoms/text/Text'
 import Button from '../../atoms/button/Button'
 import IconButton from '../../atoms/button/IconButton'
-import Input from '../../atoms/input/Input'
+import AuthInputUserIcon from '../../../../public/res/svg/auth/auth_input_user.svg?react'
+import AuthInputPasswordIcon from '../../../../public/res/svg/auth/auth_input_password.svg?react'
+import AuthSSOOrLineLeft from '../../../../public/res/svg/auth/auto_sso_or_line_left.svg?react'
+import AuthSSOOrLineRight from '../../../../public/res/svg/auth/auto_sso_or_line_right.svg?react'
 import Spinner from '../../atoms/spinner/Spinner'
 import ScrollView from '../../atoms/scroll/ScrollView'
-import Header, { TitleWrapper } from '../../atoms/header/Header'
-import Avatar from '../../atoms/avatar/Avatar'
 import ContextMenu, { MenuItem, MenuHeader } from '../../atoms/context-menu/ContextMenu'
 import ChevronBottomIC from '../../../../public/res/ic/outlined/chevron-bottom.svg'
 import EyeIC from '../../../../public/res/ic/outlined/eye.svg'
 import EyeBlindIC from '../../../../public/res/ic/outlined/eye-blind.svg'
-import CinnySvg from '../../../../public/res/svg/cinny.svg'
 import SSOButtons from '../../molecules/sso-buttons/SSOButtons'
-import {MatrixHomeServer} from "../../../constant";
+import { MatrixHomeServer } from '../../../constant'
+import authImageMap from '../../../images/authImageMap'
+import { AuthInput } from './Components'
 
 const LOCALPART_SIGNUP_REGEX = /^[a-z0-9_\-.=/]+$/
 const BAD_LOCALPART_ERROR = "Username can only contain characters a-z, 0-9, or '=_-./'"
@@ -88,8 +92,8 @@ function HomeServer({ onChange }) {
     const link = window.location.origin
     const configFileUrl = `${link}${link[link.length - 1] === '/' ? '' : '/'}config.json`
     try {
-      const result = await (await fetch(configFileUrl, { method: 'GET' })).json();
-      const selectedHs = result?.defaultHomeserver;
+      const result = await (await fetch(configFileUrl, { method: 'GET' })).json()
+      const selectedHs = result?.defaultHomeserver
       const defaultHomeServer = MatrixHomeServer
       if (!defaultHomeServer) {
         console.error('没有配置matrix-home-server')
@@ -117,7 +121,7 @@ function HomeServer({ onChange }) {
   return (
     <>
       <div className="homeserver-form">
-        <Input name="homeserver" onChange={handleHsInput} value={hs?.selected} forwardRef={hsRef} label="Home server" disabled={hs === null || !hs.allowCustom} />
+        <AuthInput name="homeserver" onChange={handleHsInput} value={hs?.selected} forwardRef={hsRef} label="Home server" disabled={hs === null || !hs.allowCustom} />
         {hs?.list.length >= 2 ? (
           <ContextMenu
             placement="right"
@@ -161,28 +165,31 @@ HomeServer.propTypes = {
 }
 
 const Login = observer(({ loginFlow, baseUrl }) => {
-  const [typeIndex, setTypeIndex] = useState(0)
+  const [typeIndex, setTypeIndex] = useState(1)
   const [passVisible, setPassVisible] = useState(false)
   const loginTypes = ['Username', 'Email']
   const isPassword = loginFlow?.filter((flow) => flow.type === 'm.login.password')[0]
   const ssoProviders = loginFlow?.filter((flow) => flow.type === 'm.login.sso')[0]
-  console.log('ssoProviders', ssoProviders)
-
-  const initialValues = {
-    username: '',
-    password: '',
-    email: '',
-    other: '',
+  const [isSubmitting, setSubmitting] = useState(false)
+  const {
+    handleSubmit,
+    control,
+    trigger,
+    setValue,
+    setError,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      username: '',
+      password: '',
+      email: '',
+      other: '',
+    },
+  })
+  const onInvalid = (errors, event) => {
+    console.log('onInvalid', errors, event)
   }
-
-  const validator = (values) => {
-    const errors = {}
-    if (typeIndex === 1 && values.email.length > 0 && !isValidInput(values.email, EMAIL_REGEX)) {
-      errors.email = BAD_EMAIL_ERROR
-    }
-    return errors
-  }
-  const submitter = async (values, actions) => {
+  const onValid = async (values) => {
     let userBaseUrl = baseUrl
     let { username } = values
     const mxIdMatch = username.match(/^@(.+):(.+\..+)$/)
@@ -194,97 +201,228 @@ const Login = observer(({ loginFlow, baseUrl }) => {
     return auth
       .login(userBaseUrl, typeIndex === 0 ? normalizeUsername(username) : undefined, typeIndex === 1 ? values.email : undefined, values.password)
       .then(() => {
-        actions.setSubmitting(true)
+        setSubmitting(true)
         window.location.reload()
       })
       .catch((error) => {
-        let msg = error.message
+        let msg = error?.data?.error || error.message
         if (msg === 'Unknown message') msg = 'Please check your credentials'
-        actions.setErrors({
-          password: msg === 'Invalid password' ? msg : undefined,
-          other: msg !== 'Invalid password' ? msg : undefined,
-        })
-        actions.setSubmitting(false)
+        if (msg === 'Invalid password') {
+          setError('password', { type: 'manual', message: msg })
+        } else {
+          setError('other', { type: 'manual', message: msg })
+        }
+        setSubmitting(false)
       })
   }
 
   return (
-    <>
-      <div
-        className="auth-form__heading"
+    <Box
+      sx={{
+        width: '100%',
+      }}
+    >
+      <Box
+        sx={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'flex-end',
+          padding: '0 0 0 20px',
+          height: '331px',
+        }}
       >
-        <Text variant="h2" weight="medium">
-          Login
-        </Text>
+        <Box
+          sx={{
+            width: '154px',
+            height: '40px',
+            backgroundColor: 'red',
+            marginBottom: '98px',
+            marginRight: '6px',
+          }}
+        />
+        <Box
+          sx={{
+            width: '195px',
+            height: '187px',
+            backgroundColor: 'blue',
+            marginBottom: '50px',
+          }}
+        />
+      </Box>
+      <Box
+        sx={{
+          width: '100%',
+          display: 'flex',
+          padding: '0 20px',
+          flexDirection: 'column',
+        }}
+      >
         {isPassword && (
-          <ContextMenu
-            placement="right"
-            content={(hideMenu) =>
-              loginTypes.map((type, index) => (
-                <MenuItem
-                  key={type}
-                  onClick={() => {
-                    hideMenu()
-                    setTypeIndex(index)
+          <Box
+            component="form"
+            onSubmit={handleSubmit(onValid, onInvalid)}
+            sx={{
+              width: '100%',
+            }}
+          >
+            {isSubmitting && <LoadingScreen message="Login in progress..." />}
+            <Box
+              sx={{
+                width: '100%',
+                marginBottom: '16px',
+              }}
+            >
+              {typeIndex === 0 && (
+                <Controller
+                  control={control}
+                  name="username"
+                  render={({ field }) => (
+                    <AuthInput
+                      value={field.value}
+                      name="username"
+                      onChange={(event) => {
+                        field.onChange(event.target.value)
+                      }}
+                      label="Username"
+                      type="username"
+                    />
+                  )}
+                />
+              )}
+              {errors?.username?.message && (
+                <Text className="auth-form__error" variant="b3">
+                  {errors.username.message}
+                </Text>
+              )}
+              {typeIndex === 1 && (
+                <Controller
+                  control={control}
+                  name="email"
+                  rules={{
+                    required: 'Email is required',
+                    validate: (value) => {
+                      if (typeIndex === 1 && value.length > 0 && !isValidInput(value, EMAIL_REGEX)) {
+                        return BAD_EMAIL_ERROR
+                      }
+                    },
                   }}
-                >
-                  {type}
-                </MenuItem>
-              ))
-            }
-            render={(toggleMenu) => (
-              <Button onClick={toggleMenu} iconSrc={ChevronBottomIC}>
-                {loginTypes[typeIndex]}
-              </Button>
+                  render={({ field }) => (
+                    <AuthInput
+                      icon={
+                        <AuthInputUserIcon
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            marginRight: '9px',
+                          }}
+                        />
+                      }
+                      value={field.value}
+                      name="email"
+                      onChange={(event) => {
+                        field.onChange(event.target.value)
+                      }}
+                      placeholder="Email"
+                    />
+                  )}
+                />
+              )}
+              {errors?.email?.message && (
+                <Text className="auth-form__error" variant="b3">
+                  {errors.email.message}
+                </Text>
+              )}
+            </Box>
+            <Box
+              sx={{
+                width: '100%',
+                marginBottom: '32px',
+              }}
+            >
+              <Controller
+                control={control}
+                rules={{
+                  required: 'Password is required',
+                }}
+                name="password"
+                render={({ field }) => (
+                  <AuthInput
+                    icon={
+                      <AuthInputPasswordIcon
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          marginRight: '9px',
+                        }}
+                      />
+                    }
+                    value={field.value}
+                    name="password"
+                    onChange={(event) => {
+                      field.onChange(event.target.value)
+                    }}
+                    type="password"
+                    placeholder="Password"
+                  />
+                )}
+              />
+              {errors?.password?.message && (
+                <Text className="auth-form__error" variant="b3">
+                  {errors.password.message}
+                </Text>
+              )}
+            </Box>
+            {errors?.other?.message && (
+              <Text className="auth-form__error" variant="b3">
+                {errors.other.message}
+              </Text>
             )}
-          />
+            <MUIButton
+              sx={{
+                width: '100%',
+                height: '50px',
+                backgroundColor: '#25B1FF',
+                borderRadius: '8px',
+              }}
+              type="submit"
+              variant="surface"
+              disabled={isSubmitting}
+            >
+              Login
+            </MUIButton>
+          </Box>
         )}
-      </div>
-      {isPassword && (
-        <Formik initialValues={initialValues} onSubmit={submitter} validate={validator}>
-          {({ values, errors, handleChange, handleSubmit, isSubmitting }) => (
-            <>
-              {isSubmitting && <LoadingScreen message="Login in progress..." />}
-              <form className="auth-form" onSubmit={handleSubmit}>
-                {typeIndex === 0 && <Input values={values.username} name="username" onChange={handleChange} label="Username" type="username" required />}
-                {errors.username && (
-                  <Text className="auth-form__error" variant="b3">
-                    {errors.username}
-                  </Text>
-                )}
-                {typeIndex === 1 && <Input values={values.email} name="email" onChange={handleChange} label="Email" type="email" required />}
-                {errors.email && (
-                  <Text className="auth-form__error" variant="b3">
-                    {errors.email}
-                  </Text>
-                )}
-                <div className="auth-form__pass-eye-wrapper">
-                  <Input values={values.password} name="password" onChange={handleChange} label="Password" type={passVisible ? 'text' : 'password'} required />
-                  <IconButton onClick={() => setPassVisible(!passVisible)} src={passVisible ? EyeIC : EyeBlindIC} size="extra-small" />
-                </div>
-                {errors.password && (
-                  <Text className="auth-form__error" variant="b3">
-                    {errors.password}
-                  </Text>
-                )}
-                {errors.other && (
-                  <Text className="auth-form__error" variant="b3">
-                    {errors.other}
-                  </Text>
-                )}
-                <div className="auth-form__btns">
-                  <Button variant="primary" type="submit" disabled={isSubmitting}>
-                    Login
-                  </Button>
-                </div>
-              </form>
-            </>
+        <Box
+          sx={{
+            width: '100%',
+            marginTop: '86px',
+          }}
+        >
+          {ssoProviders && isPassword && (
+            <Box
+              sx={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '24px',
+              }}
+            >
+              <AuthSSOOrLineLeft />
+              <Box
+                sx={{
+                  margin: '0 8px',
+                }}
+              >
+                Or
+              </Box>
+              <AuthSSOOrLineRight />
+            </Box>
           )}
-        </Formik>
-      )}
-      {ssoProviders && isPassword && <Text className="sso__divider">OR</Text>}
-      {ssoProviders && <SSOButtons type="sso" identityProviders={ssoProviders.identity_providers} baseUrl={baseUrl} />}
-    </>
+          {ssoProviders && <SSOButtons type="sso" identityProviders={ssoProviders.identity_providers} baseUrl={baseUrl} />}
+        </Box>
+      </Box>
+    </Box>
   )
 })
 Login.propTypes = {
@@ -299,6 +437,7 @@ function Register({ registerInfo, loginFlow, baseUrl }) {
   const [passVisible, setPassVisible] = useState(false)
   const [cPassVisible, setCPassVisible] = useState(false)
   const formRef = useRef()
+  const [isSubmitting, setSubmitting] = useState(false)
 
   const ssoProviders = loginFlow?.filter((flow) => flow.type === 'm.login.sso')[0]
   const isDisabled = registerInfo.errcode !== undefined
@@ -317,72 +456,69 @@ function Register({ registerInfo, loginFlow, baseUrl }) {
     if (!isTerms) isTerms = flow.stages.indexOf('m.login.terms') > -1
     if (!isDummy) isDummy = flow.stages.indexOf('m.login.dummy') > -1
   })
+  const {
+    handleSubmit,
+    control,
+    trigger,
+    setValue,
+    setError,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      username: '',
+      password: '',
+      confirmPassword: '',
+      email: '',
+      other: '',
+    },
+  })
+  const { username: formUsername, password: formPassword, email: formEmail } = useWatch({ control })
 
-  const initialValues = {
-    username: '',
-    password: '',
-    confirmPassword: '',
-    email: '',
-    other: '',
+  const getInputs = () => [formUsername, formPassword, formEmail]
+  const onInvalid = (errors, event) => {
+    console.log('onInvalid', errors, event)
   }
-
-  const validator = (values) => {
-    const errors = {}
-    if (values.username.list > 255) errors.username = USER_ID_TOO_LONG_ERROR
-    if (values.username.length > 0 && !isValidInput(values.username, LOCALPART_SIGNUP_REGEX)) {
-      errors.username = BAD_LOCALPART_ERROR
-    }
-    if (values.password.length > 0 && !isValidInput(values.password, PASSWORD_STRENGHT_REGEX)) {
-      errors.password = BAD_PASSWORD_ERROR
-    }
-    if (values.confirmPassword.length > 0 && !isValidInput(values.confirmPassword, values.password)) {
-      errors.confirmPassword = CONFIRM_PASSWORD_ERROR
-    }
-    if (values.email.length > 0 && !isValidInput(values.email, EMAIL_REGEX)) {
-      errors.email = BAD_EMAIL_ERROR
-    }
-    return errors
-  }
-  const submitter = (values, actions) => {
+  const onValid = (values) => {
     const tempClient = auth.createTemporaryClient(baseUrl)
     clientSecret = tempClient.generateClientSecret()
     return tempClient
       .isUsernameAvailable(values.username)
       .then(async (isAvail) => {
         if (!isAvail) {
-          actions.setErrors({ username: 'Username is already taken' })
-          actions.setSubmitting(false)
+          setError('username', { type: 'manual', message: 'Username is already taken' })
+          setSubmitting(false)
           return
         }
         if (isEmail && values.email.length > 0) {
           const result = await auth.verifyEmail(baseUrl, values.email, clientSecret, 1)
           if (result.errcode) {
-            if (result.errcode === 'M_THREEPID_IN_USE') actions.setErrors({ email: result.error })
-            else actions.setErrors({ others: result.error || result.message })
-            actions.setSubmitting(false)
+            if (result.errcode === 'M_THREEPID_IN_USE') {
+              setError('email', { type: 'manual', message: result.error })
+            } else {
+              setError('other', { type: 'manual', message: result.error || result.message })
+            }
+            setSubmitting(false)
             return
           }
           sid = result.sid
         }
         setProcess({ type: 'processing', message: 'Registration in progress....' })
-        actions.setSubmitting(false)
+        setSubmitting(false)
       })
       .catch((err) => {
-        const msg = err.message || err.error
-        if (['M_USER_IN_USE', 'M_INVALID_USERNAME', 'M_EXCLUSIVE'].indexOf(err.errcode) > -1) {
-          actions.setErrors({ username: err.errcode === 'M_USER_IN_USE' ? 'Username is already taken' : msg })
-        } else if (msg) actions.setErrors({ other: msg })
+        const finalError = err?.data ? err.data : err
+        const msg = finalError.error || finalError.message
+        if (['M_USER_IN_USE', 'M_INVALID_USERNAME', 'M_EXCLUSIVE'].indexOf(finalError.errcode) > -1) {
+          setError('username', { type: 'manual', message: finalError.errcode === 'M_USER_IN_USE' ? 'Username is already taken' : msg })
+        } else if (msg) {
+          setError('other', { type: 'manual', message: msg })
+        }
 
-        actions.setSubmitting(false)
+        setSubmitting(false)
       })
   }
 
   const refreshWindow = () => window.location.reload()
-
-  const getInputs = () => {
-    const f = formRef.current
-    return [f.username.value, f.password.value, f?.email?.value]
-  }
 
   useEffect(() => {
     if (process.type !== 'processing') return
@@ -449,72 +585,230 @@ function Register({ registerInfo, loginFlow, baseUrl }) {
   }
 
   return (
-    <>
+    <Box
+      sx={{
+        width: '100%',
+        padding: '0 20px',
+      }}
+    >
       {process.type === 'processing' && <LoadingScreen message={process.message} />}
       {process.type === 'm.login.recaptcha' && <Recaptcha message="Please check the box below to proceed." sitekey={process.sitekey} onChange={handleRecaptcha} />}
       {process.type === 'm.login.terms' && <Terms url={process.url} onSubmit={handleTerms} />}
       {process.type === 'm.login.email.identity' && <EmailVerify email={process.email} onContinue={handleEmailVerify} />}
-      <div className="auth-form__heading">
-        {!isDisabled && (
-          <Text variant="h2" weight="medium">
-            Register
-          </Text>
-        )}
-        {isDisabled && <Text className="auth-form__error">{registerInfo.error}</Text>}
-      </div>
+      {isDisabled && <Text className="auth-form__error">{registerInfo.error}</Text>}
+      <Box
+        sx={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'flex-end',
+          height: '331px',
+          padding: '0 20px',
+        }}
+      >
+        <Box
+          sx={{
+            width: '154px',
+            height: '40px',
+            backgroundColor: 'red',
+            marginBottom: '98px',
+          }}
+        />
+      </Box>
       {!isDisabled && (
-        <Formik initialValues={initialValues} onSubmit={submitter} validate={validator}>
-          {({ values, errors, handleChange, handleSubmit, isSubmitting }) => (
-            <>
-              {process.type === undefined && isSubmitting && <LoadingScreen message="Registration in progress..." />}
-              <form className="auth-form" ref={formRef} onSubmit={handleSubmit}>
-                <Input values={values.username} name="username" onChange={handleChange} label="Username" type="username" required />
-                {errors.username && (
-                  <Text className="auth-form__error" variant="b3">
-                    {errors.username}
-                  </Text>
-                )}
-                <div className="auth-form__pass-eye-wrapper">
-                  <Input values={values.password} name="password" onChange={handleChange} label="Password" type={passVisible ? 'text' : 'password'} required />
-                  <IconButton onClick={() => setPassVisible(!passVisible)} src={passVisible ? EyeIC : EyeBlindIC} size="extra-small" />
-                </div>
-                {errors.password && (
-                  <Text className="auth-form__error" variant="b3">
-                    {errors.password}
-                  </Text>
-                )}
-                <div className="auth-form__pass-eye-wrapper">
-                  <Input values={values.confirmPassword} name="confirmPassword" onChange={handleChange} label="Confirm password" type={cPassVisible ? 'text' : 'password'} required />
-                  <IconButton onClick={() => setCPassVisible(!cPassVisible)} src={cPassVisible ? EyeIC : EyeBlindIC} size="extra-small" />
-                </div>
-                {errors.confirmPassword && (
-                  <Text className="auth-form__error" variant="b3">
-                    {errors.confirmPassword}
-                  </Text>
-                )}
-                {isEmail && <Input values={values.email} name="email" onChange={handleChange} label={`Email${isEmailRequired ? '' : ' (optional)'}`} type="email" required={isEmailRequired} />}
-                {errors.email && (
-                  <Text className="auth-form__error" variant="b3">
-                    {errors.email}
-                  </Text>
-                )}
-                {errors.other && (
-                  <Text className="auth-form__error" variant="b3">
-                    {errors.other}
-                  </Text>
-                )}
-                <div className="auth-form__btns">
-                  <Button variant="primary" type="submit" disabled={isSubmitting}>
-                    Register
-                  </Button>
-                </div>
-              </form>
-            </>
+        <Box component="form" onSubmit={handleSubmit(onValid, onInvalid)}>
+          {process.type === undefined && isSubmitting && <LoadingScreen message="Registration in progress..." />}
+          {isEmail && (
+            <Controller
+              control={control}
+              name="email"
+              rules={{
+                required: 'Email is required',
+                validate: (value) => {
+                  if (value.length > 0 && !isValidInput(value, EMAIL_REGEX)) {
+                    return BAD_EMAIL_ERROR
+                  }
+                },
+              }}
+              render={({ field }) => (
+                <Box
+                  sx={{
+                    width: '100%',
+                    marginBottom: '16px',
+                  }}
+                >
+                  <AuthInput
+                    value={field.email}
+                    name="email"
+                    onChange={(event) => {
+                      field.onChange(event.target.value)
+                    }}
+                    placeholder={`Email${isEmailRequired ? '' : ' (optional)'}`}
+                  />
+                  {errors?.email?.message && (
+                    <Text className="auth-form__error" variant="b3">
+                      {errors.email.message}
+                    </Text>
+                  )}
+                </Box>
+              )}
+            />
           )}
-        </Formik>
+          <Controller
+            control={control}
+            name="username"
+            rules={{
+              required: 'Username is required',
+              validate: (value) => {
+                if (value.length > 255) {
+                  return USER_ID_TOO_LONG_ERROR
+                }
+                if (value.length > 0 && !isValidInput(value, LOCALPART_SIGNUP_REGEX)) {
+                  return BAD_LOCALPART_ERROR
+                }
+              },
+            }}
+            render={({ field }) => (
+              <Box
+                sx={{
+                  width: '100%',
+                  marginBottom: '16px',
+                }}
+              >
+                <AuthInput
+                  icon={
+                    <AuthInputUserIcon
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        marginRight: '9px',
+                      }}
+                    />
+                  }
+                  value={field.value}
+                  name="username"
+                  onChange={(event) => {
+                    field.onChange(event.target.value)
+                  }}
+                  placeholder="Username"
+                />
+                {errors?.username?.message && (
+                  <Text className="auth-form__error" variant="b3">
+                    {errors.username.message}
+                  </Text>
+                )}
+              </Box>
+            )}
+          />
+          <Controller
+            control={control}
+            name="password"
+            rules={{
+              required: 'Password is required',
+              validate: (value) => {
+                if (value.length > 0 && !isValidInput(value, PASSWORD_STRENGHT_REGEX)) {
+                  return BAD_PASSWORD_ERROR
+                }
+              },
+            }}
+            render={({ field }) => (
+              <Box
+                sx={{
+                  width: '100%',
+                  marginBottom: '16px',
+                }}
+              >
+                <AuthInput
+                  icon={
+                    <AuthInputPasswordIcon
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        marginRight: '9px',
+                      }}
+                    />
+                  }
+                  value={field.value}
+                  name="password"
+                  onChange={(event) => {
+                    field.onChange(event.target.value)
+                  }}
+                  type="password"
+                  placeholder="Password"
+                />
+                {errors?.password?.message && (
+                  <Text className="auth-form__error" variant="b3">
+                    {errors.password.message}
+                  </Text>
+                )}
+              </Box>
+            )}
+          />
+          <Controller
+            control={control}
+            name="confirmPassword"
+            rules={{
+              required: 'Confirm password is required',
+              validate: (value, formValues) => {
+                if (value.length > 0 && !isValidInput(value, formValues.password)) {
+                  return CONFIRM_PASSWORD_ERROR
+                }
+              },
+            }}
+            render={({ field }) => (
+              <Box
+                sx={{
+                  width: '100%',
+                  marginBottom: '32px',
+                }}
+              >
+                <AuthInput
+                  icon={
+                    <AuthInputPasswordIcon
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        marginRight: '9px',
+                      }}
+                    />
+                  }
+                  value={field.value}
+                  name="confirmPassword"
+                  type="password"
+                  onChange={(event) => {
+                    field.onChange(event.target.value)
+                  }}
+                  placeholder="Confirm password"
+                />
+                {errors?.confirmPassword?.message && (
+                  <Text className="auth-form__error" variant="b3">
+                    {errors.confirmPassword.message}
+                  </Text>
+                )}
+              </Box>
+            )}
+          />
+          {errors?.other?.message && (
+            <Text className="auth-form__error" variant="b3">
+              {errors?.other?.message}
+            </Text>
+          )}
+          <MUIButton
+            sx={{
+              width: '100%',
+              height: '50px',
+              backgroundColor: '#25B1FF',
+              borderRadius: '8px',
+            }}
+            type="submit"
+            variant="surface"
+            disabled={isSubmitting}
+          >
+            Register
+          </MUIButton>
+        </Box>
       )}
       {isDisabled && ssoProviders && <SSOButtons type="sso" identityProviders={ssoProviders.identity_providers} baseUrl={baseUrl} />}
-    </>
+    </Box>
   )
 }
 Register.propTypes = {
@@ -523,16 +817,9 @@ Register.propTypes = {
   baseUrl: PropTypes.string.isRequired,
 }
 
-function AuthCard() {
-  const [hsConfig, setHsConfig] = useState(null)
-  const [type, setType] = useState('login')
-  const handleHsChange = (info) => {
-    setHsConfig(info)
-  }
-
+function AuthCard({ type, setType, hsConfig }) {
   return (
     <>
-      <HomeServer onChange={handleHsChange} />
       {hsConfig !== null &&
         (type === 'login' ? (
           <Login loginFlow={hsConfig.login.flows} baseUrl={hsConfig.baseUrl} />
@@ -552,7 +839,13 @@ function AuthCard() {
 }
 
 function Auth() {
+  const [step, setStep] = useState(0)
   const [loginToken, setLoginToken] = useState(getUrlPrams('loginToken'))
+  const [type, setType] = useState('login')
+  const [hs, setHs] = useState(null)
+  const [hsConfig, setHsConfig] = useState(null)
+  const [process, setProcess] = useState({ isLoading: true, message: 'Loading homeserver list...' })
+  const welcomeRef = useRef(null)
 
   const init = async () => {
     if (localStorage.getItem(cons.secretKey.BASE_URL) === undefined) {
@@ -567,57 +860,200 @@ function Auth() {
       window.location.replace(href.slice(0, href.indexOf('?')))
     } catch {
       setLoginToken(null)
+      const link = window.location.origin
+      const configFileUrl = `${link}${link[link.length - 1] === '/' ? '' : '/'}config.json`
+      try {
+        const result = await (await fetch(configFileUrl, { method: 'GET' })).json()
+        const selectedHs = result?.defaultHomeserver
+        const defaultHomeServer = MatrixHomeServer
+        if (!defaultHomeServer) {
+          console.error('没有配置matrix-home-server')
+          return
+        }
+        const hsList = Array.isArray(result?.homeserverList) ? [defaultHomeServer, ...result?.homeserverList] : [defaultHomeServer]
+        const allowCustom = result?.allowCustomHomeservers ?? true
+        if (!hsList?.length > 0 || selectedHs < 0 || selectedHs >= hsList?.length) {
+          throw new Error()
+        }
+        setHs({ selected: hsList[selectedHs], list: hsList, allowCustom })
+      } catch {
+        setHs({ selected: 'matrix.org', list: ['matrix.org'], allowCustom: true })
+      }
     }
   }
   useEffect(() => {
     init()
   }, [])
+  const handleHsChange = (info) => {
+    setHsConfig(info)
+  }
+
+  const setupHsConfig = async (servername) => {
+    setProcess({ isLoading: true, message: 'Looking for homeserver...' })
+    let baseUrl = null
+    baseUrl = await getBaseUrl(servername)
+
+    if (searchingHs !== servername) return
+    setProcess({ isLoading: true, message: `Connecting to ${baseUrl}...` })
+    const tempClient = auth.createTemporaryClient(baseUrl)
+
+    Promise.allSettled([tempClient.loginFlows(), tempClient.register()])
+      .then((values) => {
+        const loginFlow = values[0].status === 'fulfilled' ? values[0]?.value : undefined
+        const registerFlow = values[1].status === 'rejected' ? values[1]?.reason?.data : undefined
+        if (loginFlow === undefined || registerFlow === undefined) throw new Error()
+
+        if (searchingHs !== servername) return
+        handleHsChange({ baseUrl, login: loginFlow, register: registerFlow })
+        setProcess({ isLoading: false })
+      })
+      .catch(() => {
+        if (searchingHs !== servername) return
+        handleHsChange(null)
+        setProcess({ isLoading: false, error: 'Unable to connect. Please check your input.' })
+      })
+  }
+
+  useEffect(() => {
+    handleHsChange(null)
+    if (hs === null || hs?.selected.trim() === '') return
+    searchingHs = hs.selected
+    setupHsConfig(hs.selected)
+  }, [hs])
+  const stepForward = (type) => {
+    setType(type)
+    gsap.to(welcomeRef.current, {
+      x: '-100%',
+      duration: 0.3,
+      ease: 'power2.inOut',
+      onComplete: () => {
+        setStep(1)
+      },
+    })
+  }
 
   return (
-    <ScrollView invisible>
-      <div className="auth__base">
-        <div className="auth__wrapper">
-          {/* eslint-disable-next-line no-use-before-define */}
-          {loginToken && <LoadingScreen message="Redirecting..." />}
-          {!loginToken && (
-            <div className="auth-card">
-              <Header>
-                <Avatar size="extra-small" imageSrc={CinnySvg} />
-                <TitleWrapper>
-                  <Text variant="h2" weight="medium">
-                    Defed
-                  </Text>
-                </TitleWrapper>
-              </Header>
-              <div className="auth-card__content">
-                <AuthCard />
+    <Box
+      sx={{
+        width: '100vw',
+        height: '100vh',
+        position: 'relative',
+      }}
+    >
+      {step === 0 ? (
+        <Box
+          sx={{
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            zIndex: 1,
+            backgroundColor: '#FAFAFA',
+          }}
+          ref={welcomeRef}
+        >
+          <Box
+            sx={{
+              width: '100%',
+              height: '414px',
+              backgroundColor: 'blue',
+            }}
+          />
+          <Box
+            sx={{
+              width: '100%',
+              padding: '0 20px 30px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <Box
+              sx={{
+                width: '100%',
+                height: '160px',
+              }}
+              component="img"
+              src={authImageMap.welcomeText}
+            />
+            <Box
+              sx={{
+                fontSize: '16px',
+                fontWeight: 400,
+                lineHeight: '24px',
+                color: '#78828C',
+                marginTop: '16px',
+              }}
+            >
+              Create a free AIbo account and Claim your AIBO token rewards.
+            </Box>
+            <ButtonBase
+              sx={{
+                width: '100%',
+                height: '67px',
+                marginTop: '24px',
+              }}
+              onClick={() => {
+                stepForward('login')
+              }}
+            >
+              <Box
+                component="img"
+                src={authImageMap.letUsStartButton}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                }}
+              />
+            </ButtonBase>
+            <Box
+              sx={{
+                fontSize: '14px',
+                color: '#23282D',
+                fontWeight: 400,
+                lineHeight: '20px',
+                marginTop: '16px',
+              }}
+            >
+              Don't have an account?
+              <Box
+                component="span"
+                sx={{
+                  color: '#25BEFF',
+                  marginLeft: '4px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  stepForward('register')
+                }}
+              >
+                Register
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      ) : null}
+      <ScrollView invisible>
+        <div className="auth__base">
+          <div className="auth__wrapper">
+            {/* eslint-disable-next-line no-use-before-define */}
+            {loginToken && <LoadingScreen message="Redirecting..." />}
+            {!loginToken && (
+              <div className="auth-card">
+                <div className="auth-card__content">
+                  <AuthCard type={type} setType={setType} hsConfig={hsConfig} />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-
-        <div className="auth-footer">
-          <Text variant="b2">
-            <a href="https://cinny.in" target="_blank" rel="noreferrer">
-              About
-            </a>
-          </Text>
-          <Text variant="b2">
-            <a href="https://github.com/ajbura/cinny/releases" target="_blank" rel="noreferrer">{`v${cons.version}`}</a>
-          </Text>
-          <Text variant="b2">
-            <a href="https://twitter.com/cinnyapp" target="_blank" rel="noreferrer">
-              Twitter
-            </a>
-          </Text>
-          <Text variant="b2">
-            <a href="https://matrix.org" target="_blank" rel="noreferrer">
-              Powered by Matrix
-            </a>
-          </Text>
-        </div>
-      </div>
-    </ScrollView>
+      </ScrollView>
+    </Box>
   )
 }
 

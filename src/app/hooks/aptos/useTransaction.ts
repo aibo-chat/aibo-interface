@@ -9,6 +9,7 @@ export function useTransaction() {
     signAndSubmitTransaction,
   } = useWallet();
 
+  //获取用户已经注册过的 Token 余额列表
   const getCoinBalance = async () => {
     if (!account || !network) {
       throw new Error("no wallet connect");
@@ -22,8 +23,8 @@ export function useTransaction() {
   /**
    * 
    * @param address 转账地址
-   * @param amount 转账的数量，需要带精度
-   * @param coinType 转账的 Token 类型
+   * @param amount 转账的数量，需要处理好精度
+   * @param coinType 转账的 Token 类型（地址）
    */
   const transfer = async ({
     address,
@@ -46,8 +47,9 @@ export function useTransaction() {
 
     try {
       const response = await signAndSubmitTransaction(transaction);
+      //开始 Pending
       await aptosClient(network?.name.toLowerCase()).waitForTransaction({ transactionHash: response.hash });
-      //交易成功 => 返回结果
+      //交易成功 => 返回交易的结果
       return response;
     } catch (error) {
       throw error;

@@ -19,8 +19,6 @@ import RoomOptions from '../../molecules/room-options/RoomOptions'
 import VerticalMenuIC from '../../../../public/res/ic/outlined/vertical-menu.svg'
 
 import { useForceUpdate } from '../../hooks/useForceUpdate'
-import { useSetSetting } from '../../state/hooks/settings'
-import { settingsAtom } from '../../state/settings'
 import CommonConditionDisplay from '../../components/common/CommonConditionDisplay'
 
 function RoomViewHeader({ roomId }) {

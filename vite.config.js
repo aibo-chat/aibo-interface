@@ -5,6 +5,7 @@ import { wasm } from '@rollup/plugin-wasm'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import path from 'path'
 
 const copyFiles = {
   targets: [
@@ -61,6 +62,17 @@ export default defineConfig({
     wasm(),
     react(),
     svgr(),
+    {
+      name: 'prevent-base64',
+      enforce: 'pre',
+      apply: 'build',
+      load(id) {
+        const relativePath = path.relative(__dirname, id)
+        if (relativePath.startsWith('public\\res\\json\\images')) {
+          return null
+        }
+      },
+    },
   ],
   optimizeDeps: {
     esbuildOptions: {

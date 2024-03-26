@@ -10,11 +10,7 @@ import clientLoadingImageMap from '../../../images/clientLoadingImageMap'
 import RefreshIcon from '../../../../public/res/svg/common/common_outlined_refresh_icon.svg?react'
 import { ComputedAiboJson } from '../../../util/jsonComputed'
 
-interface IClientLoadingProps {
-  loadingMsg: string
-}
-
-const ClientLoading: React.FC<IClientLoadingProps> = ({ loadingMsg }) => {
+const ClientLoading: React.FC = () => {
   const {
     initData,
     targetProxy,

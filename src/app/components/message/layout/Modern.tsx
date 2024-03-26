@@ -1,13 +1,20 @@
-import React, { ReactNode } from 'react';
-import { Box, as } from 'folds';
-import * as css from './layout.css';
+import React, { ReactNode } from 'react'
+import { Box, as } from 'folds'
+import * as css from './layout.css'
 
 type ModernLayoutProps = {
-  before?: ReactNode;
-};
+  before?: ReactNode
+}
 
 export const ModernLayout = as<'div', ModernLayoutProps>(({ before, children, ...props }, ref) => (
-  <Box gap="300" {...props} ref={ref}>
+  <Box
+    gap="300"
+    {...props}
+    ref={ref}
+    style={{
+      backgroundColor: 'red',
+    }}
+  >
     <Box className={css.ModernBefore} shrink="No">
       {before}
     </Box>
@@ -15,4 +22,4 @@ export const ModernLayout = as<'div', ModernLayoutProps>(({ before, children, ..
       {children}
     </Box>
   </Box>
-));
+))

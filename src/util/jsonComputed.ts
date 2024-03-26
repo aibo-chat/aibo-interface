@@ -1,5 +1,5 @@
 import AiboJson from '../../public/res/json/aibo.json'
-import anyImage from '../../public/res/json/images/img_2.png'
+import anyImage from '../../public/res/json/images/img_2.png?url'
 
 const finalPath = anyImage.replace(/img_2.png/, '')
 

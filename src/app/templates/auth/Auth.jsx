@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import './Auth.scss'
 import ReCAPTCHA from 'react-google-recaptcha'
@@ -166,17 +166,13 @@ HomeServer.propTypes = {
 }
 
 const Login = observer(({ loginFlow, baseUrl }) => {
-  const [typeIndex, setTypeIndex] = useState(0)
-  const [passVisible, setPassVisible] = useState(false)
-  const loginTypes = ['Username', 'Email']
+  const typeIndex = 0
   const isPassword = loginFlow?.filter((flow) => flow.type === 'm.login.password')[0]
   const ssoProviders = loginFlow?.filter((flow) => flow.type === 'm.login.sso')[0]
   const [isSubmitting, setSubmitting] = useState(false)
   const {
     handleSubmit,
     control,
-    trigger,
-    setValue,
     setError,
     formState: { errors },
   } = useForm({

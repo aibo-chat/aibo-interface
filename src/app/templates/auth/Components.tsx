@@ -1,48 +1,16 @@
-import React, { ChangeEventHandler, CompositionEventHandler, KeyboardEventHandler, Ref } from 'react'
+import React, { ChangeEventHandler } from 'react'
 import { Box, InputBase } from '@mui/material'
 
 interface IInputProps {
-  id?: string
   name?: string
-  label?: string
   value?: string
   placeholder?: string
   required?: boolean
   type?: string
   onChange?: ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> | undefined
-  onCompositionEnd?: CompositionEventHandler<HTMLInputElement>
-  forwardRef?: Ref<HTMLTextAreaElement> | Ref<HTMLInputElement>
-  resizable?: boolean
-  minHeight?: number
-  onResize?: (e: Event) => void
-  state?: 'normal' | 'success' | 'error'
-  onKeyDown?: KeyboardEventHandler<HTMLTextAreaElement> | KeyboardEventHandler<HTMLInputElement>
-  disabled?: boolean
-  autoFocus?: boolean
-  controlledValue?: string
   icon?: React.ReactNode
 }
-export const AuthInput: React.FC<IInputProps> = ({
-  id,
-  name = '',
-  label = '',
-  value = '',
-  placeholder = '',
-  type = 'text',
-  required = false,
-  onChange,
-  onCompositionEnd,
-  forwardRef = null,
-  resizable = false,
-  minHeight = 46,
-  onResize,
-  state = 'normal',
-  onKeyDown,
-  disabled = false,
-  autoFocus = false,
-  controlledValue,
-  icon,
-}) => (
+export const AuthInput: React.FC<IInputProps> = ({ name = '', value = '', placeholder = '', type = 'text', required = false, onChange, icon }) => (
   <Box
     sx={{
       width: '100%',

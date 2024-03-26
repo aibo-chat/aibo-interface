@@ -1,6 +1,6 @@
 import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-react";
 import { aptosClient } from "./utils";
-import { AptosUserAssetData } from "./type";
+import { Ed25519PublicKey } from "@aptos-labs/ts-sdk";
 
 export function useTransaction() {
   const {
@@ -56,8 +56,42 @@ export function useTransaction() {
     }
   };
 
+  /**
+  * 
+  * @param address 转账地址
+  * @param amount 转账的数量，需要处理好精度
+  * @param coinType 转账的 Token 类型（地址）
+  */
+  const simulateTransferFee = async ({
+    address,
+    amount,
+    coinType,
+  }: {
+    address: string
+    amount: string
+    coinType: string
+  }) => {
+    if (!account) return
+    //构建交易
+    const rawTx = await aptosClient(network?.name.toLowerCase()).transaction.build.simple({
+      sender: account.address,
+      data: {
+        function: "0x1::aptos_account::transfer_coins",
+        typeArguments: [coinType],
+        functionArguments: [address, amount],
+      },
+    })
+    //模拟执行交易
+    const data = await aptosClient(network?.name.toLowerCase()).transaction.simulate.simple({
+      signerPublicKey: new Ed25519PublicKey(account.publicKey as string),
+      transaction: rawTx,
+    })
+    return data[0]
+  }
+
   return {
     getCoinBalance,
-    transfer
+    transfer,
+    simulateTransferFee
   }
 }

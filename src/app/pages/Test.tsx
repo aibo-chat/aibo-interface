@@ -1,46 +1,17 @@
-import React, { useEffect, useState } from "react"
+import React from "react"
 import WalletButtons from "../components/aptos/WalletButtons"
 import { useWallet } from "@aptos-labs/wallet-adapter-react"
-import { useTransaction } from "../hooks/aptos/useTransaction"
-import { AptosUserAssetData } from "../hooks/aptos/type"
 import { AptosTransfer } from "../components/aptos/Transfer"
-
-const USDT_COIN = '0xf22bede237a07e121b56d91a491eb7bcdfd1f5907926a9e58338f964a01b17fa::asset::USDT'
+import { formatAddress } from "../hooks/aptos/utils"
 
 export function TestPage() {
-  const { disconnect, connected, account, network, wallet } = useWallet()
-  const { getCoinBalance, transfer } = useTransaction()
-  const [userAsset, setUserAsset] = useState<AptosUserAssetData[]>()
-  // console.log(userAsset)
-
-  useEffect(() => {
-    if (account?.address && network?.name) {
-      getCoinBalance().then((data: any) => {
-        setUserAsset(data)
-      }).catch((error) => {
-        console.log(error);
-      })
-    } else {
-      setUserAsset(undefined)
-    }
-  }, [account?.address, network?.name])
-
-  const handleTransfer = () => {
-    transfer({
-      address: '0xa5e5c1d29207b0efb7cb05df7de84ebb49bd37f473c67803c82e91eabacde9',
-      amount: '100000',
-      coinType: USDT_COIN,
-    }).then((result) => {
-      console.log(result)
-    }).catch((error: Error) => {
-      console.error(error)
-    })
-  }
+  const { disconnect, connected, account } = useWallet()
 
   return (
     <div>
-      <WalletButtons />
+      {account?.address ? formatAddress(account.address) : <WalletButtons />}
 
+      <br />
       <button onClick={() => {
         if (connected) {
           console.log('disconnect')
@@ -50,11 +21,8 @@ export function TestPage() {
         disconnect
       </button>
 
-      {/* <button onClick={handleTransfer}>
-        transfer
-      </button> */}
-
       <AptosTransfer />
+
     </div>
   )
 }

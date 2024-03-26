@@ -1,40 +1,29 @@
 import { Box, Button } from "@mui/material";
 import React from "react";
-import TransferSvg from '../../../../public/aptos/Transfer.svg?react'
+import { formatAddress } from "../../hooks/aptos/utils";
 
 export function AptosTransferStepTwo({
-  handleBack
+  handleBack,
+  toAddress,
+  fromAddress,
+  handleConfirm
 }: {
   handleBack: () => void
+  toAddress: string
+  fromAddress: string | undefined
+  handleConfirm: () => void
 }) {
   return (
-    <Box sx={{
-      p: 4,
-      borderRadius: '0 8px 8px',
-      bgcolor: '#fff',
-    }}>
-      <Box sx={{
-        display: 'flex',
-        alignItems: 'center'
-      }}>
-        <Box>
-          <TransferSvg />
-        </Box>
+    <Box>
 
-        <Box sx={{
-          ml: 'auto',
-          fontSize: '12px',
-          color: '#25B1FF'
-        }}>
-          BALANCE: 0
-        </Box>
-      </Box>
+      <InfoLabel label="From" value={formatAddress(fromAddress ?? '')} />
 
-      <InfoLabel label="From" />
+      <InfoLabel label="To" value={formatAddress(toAddress)} />
 
-      <InfoLabel label="To" />
-
-      <InfoLabel label="Total Cost(Amount+Fee)" />
+      <InfoLabel
+        label="Total Cost(Amount+Fee)"
+        value={'xxxx'}
+      />
 
       <Box sx={{ display: 'flex', mt: 6, justifyContent: 'space-between' }}>
         <Button sx={{
@@ -54,7 +43,7 @@ export function AptosTransferStepTwo({
           Back
         </Button>
 
-        <Button sx={{
+        <Button onClick={handleConfirm} sx={{
           bgcolor: '#25B1FF',
           borderRadius: '8px',
           height: 34,
@@ -75,7 +64,7 @@ export function AptosTransferStepTwo({
 }
 
 
-function InfoLabel({ label }: { label: string }) {
+function InfoLabel({ label, value }: { label: string; value: string }) {
   return (
     <Box sx={{ mt: 4 }}>
       <Box sx={{ mb: 1, color: '#78828C', fontSize: '14px' }}>
@@ -88,7 +77,7 @@ function InfoLabel({ label }: { label: string }) {
         display: 'flex',
         alignItems: 'center'
       }}>
-        0x000000
+        {value}
       </Box>
     </Box>
   )

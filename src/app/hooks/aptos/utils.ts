@@ -1,5 +1,9 @@
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 
+export const formatAddress = (address: string, from = 5, to = 5) => {
+  return `${address.substring(0, from)}...${address.substring(address.length - to, address.length)}`
+}
+
 //生产的配置
 export const MAINNET_CONFIG = new AptosConfig({ network: Network.MAINNET });
 export const MAINNET_CLIENT = new Aptos(MAINNET_CONFIG);

@@ -74,16 +74,32 @@ function RoomViewHeader({ roomId }) {
 
   return (
     <Header>
-      <IconButton src={BackArrowIC} className="room-header__back-btn" tooltip="Return to navigation" onClick={() => openNavigation()} />
-      <button ref={roomHeaderBtnRef} className="room-header__btn" onClick={() => toggleRoomSettings()} type="button" onMouseUp={(e) => blurOnBubbling(e, '.room-header__btn')}>
-        <Avatar imageSrc={avatarSrc} text={roomName} bgColor={colorMXID(roomId)} size="small" />
-        <TitleWrapper>
-          <Text variant="h2" weight="medium" primary>
-            {twemojify(roomName)}
-          </Text>
-        </TitleWrapper>
-        <RawIcon src={ChevronBottomIC} />
-      </button>
+      <Box ref={roomHeaderBtnRef} className="room-header__btn" type="button" onMouseUp={(e) => blurOnBubbling(e, '.room-header__btn')}>
+        <Avatar
+          imageSrc={avatarSrc}
+          text={roomName}
+          bgColor={colorMXID(roomId)}
+          size="small"
+          sx={{
+            width: '32px',
+            height: '32px',
+            borderRadius: 0,
+          }}
+        />
+        <Box
+          sx={{
+            fontSize: '20px',
+            fontWeight: 400,
+            lineHeight: '20px',
+            fontFamily: 'Generic Techno',
+            color: '#141414',
+            marginLeft: '8px',
+          }}
+        >
+          {twemojify(roomName)}
+        </Box>
+        {/* <RawIcon src={ChevronBottomIC} /> */}
+      </Box>
       {roomConditions ? (
         <CommonConditionDisplay
           roomConditions={roomConditions}
@@ -99,18 +115,18 @@ function RoomViewHeader({ roomId }) {
           }}
         />
       )}
-      {mx.isRoomEncrypted(roomId) === false && <IconButton onClick={() => toggleRoomSettings(tabText.SEARCH)} tooltip="Search" src={SearchIC} />}
-      {!isDM ? (
-        <IconButton
-          className="room-header__drawer-btn"
-          onClick={() => {
-            setPeopleDrawer((t) => !t)
-          }}
-          tooltip="People"
-          src={UserIC}
-        />
-      ) : null}
-      <IconButton className="room-header__members-btn" onClick={() => toggleRoomSettings(tabText.MEMBERS)} tooltip="Members" src={UserIC} />
+      {/* {mx.isRoomEncrypted(roomId) === false && <IconButton onClick={() => toggleRoomSettings(tabText.SEARCH)} tooltip="Search" src={SearchIC} />} */}
+      {/* {!isDM ? ( */}
+      {/*  <IconButton */}
+      {/*    className="room-header__drawer-btn" */}
+      {/*    onClick={() => { */}
+      {/*      setPeopleDrawer((t) => !t) */}
+      {/*    }} */}
+      {/*    tooltip="People" */}
+      {/*    src={UserIC} */}
+      {/*  /> */}
+      {/* ) : null} */}
+      {/* <IconButton className="room-header__members-btn" onClick={() => toggleRoomSettings(tabText.MEMBERS)} tooltip="Members" src={UserIC} /> */}
       <IconButton onClick={openRoomOptions} tooltip="Options" src={VerticalMenuIC} />
     </Header>
   )

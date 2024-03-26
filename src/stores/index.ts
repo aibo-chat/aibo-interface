@@ -60,7 +60,7 @@ export class Store {
     // 需要auth认证的初始化得放在initUserData之后
     yield this.appStore.initUserData(targetProxy)
     // yield this.appStore.initGroupConfig()
-    yield this.userAssetStore.initData()
+    // yield this.userAssetStore.initData()
     // yield this.userRelationshipStore.initData()
   }
 

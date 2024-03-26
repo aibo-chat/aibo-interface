@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import PropTypes from 'prop-types'
 import './Auth.scss'
 import ReCAPTCHA from 'react-google-recaptcha'
@@ -6,6 +6,8 @@ import { gsap } from 'gsap'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { observer } from 'mobx-react-lite'
 import { Box, ButtonBase, Button as MUIButton } from '@mui/material'
+import { useIsomorphicLayoutEffect } from 'ahooks'
+import lottie from 'lottie-web'
 import * as auth from '../../../client/action/auth'
 import cons from '../../../client/state/cons'
 import { Debounce, getUrlPrams } from '../../../util/common'
@@ -21,12 +23,11 @@ import Spinner from '../../atoms/spinner/Spinner'
 import ScrollView from '../../atoms/scroll/ScrollView'
 import ContextMenu, { MenuItem, MenuHeader } from '../../atoms/context-menu/ContextMenu'
 import ChevronBottomIC from '../../../../public/res/ic/outlined/chevron-bottom.svg'
-import EyeIC from '../../../../public/res/ic/outlined/eye.svg'
-import EyeBlindIC from '../../../../public/res/ic/outlined/eye-blind.svg'
 import SSOButtons from '../../molecules/sso-buttons/SSOButtons'
 import { MatrixHomeServer } from '../../../constant'
 import authImageMap from '../../../images/authImageMap'
 import { AuthInput } from './Components'
+import { ComputedAiboJson } from '../../../util/jsonComputed'
 
 const LOCALPART_SIGNUP_REGEX = /^[a-z0-9_\-.=/]+$/
 const BAD_LOCALPART_ERROR = "Username can only contain characters a-z, 0-9, or '=_-./'"
@@ -165,7 +166,7 @@ HomeServer.propTypes = {
 }
 
 const Login = observer(({ loginFlow, baseUrl }) => {
-  const [typeIndex, setTypeIndex] = useState(1)
+  const [typeIndex, setTypeIndex] = useState(0)
   const [passVisible, setPassVisible] = useState(false)
   const loginTypes = ['Username', 'Email']
   const isPassword = loginFlow?.filter((flow) => flow.type === 'm.login.password')[0]
@@ -210,7 +211,7 @@ const Login = observer(({ loginFlow, baseUrl }) => {
         if (msg === 'Invalid password') {
           setError('password', { type: 'manual', message: msg })
         } else {
-          setError('other', { type: 'manual', message: msg })
+          setError('password', { type: 'manual', message: msg })
         }
         setSubmitting(false)
       })
@@ -235,18 +236,20 @@ const Login = observer(({ loginFlow, baseUrl }) => {
           sx={{
             width: '154px',
             height: '40px',
-            backgroundColor: 'red',
             marginBottom: '98px',
-            marginRight: '6px',
+            marginRight: '18px',
           }}
+          component="img"
+          src={authImageMap.authLogin}
         />
         <Box
           sx={{
             width: '195px',
             height: '187px',
-            backgroundColor: 'blue',
-            marginBottom: '50px',
+            marginBottom: '37px',
           }}
+          component="img"
+          src={authImageMap.authAiboLogo}
         />
       </Box>
       <Box
@@ -276,15 +279,26 @@ const Login = observer(({ loginFlow, baseUrl }) => {
                 <Controller
                   control={control}
                   name="username"
+                  rules={{
+                    required: 'Username is required',
+                  }}
                   render={({ field }) => (
                     <AuthInput
+                      icon={
+                        <AuthInputUserIcon
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            marginRight: '9px',
+                          }}
+                        />
+                      }
                       value={field.value}
                       name="username"
                       onChange={(event) => {
                         field.onChange(event.target.value)
                       }}
-                      label="Username"
-                      type="username"
+                      placeholder="Username"
                     />
                   )}
                 />
@@ -495,7 +509,7 @@ function Register({ registerInfo, loginFlow, baseUrl }) {
             if (result.errcode === 'M_THREEPID_IN_USE') {
               setError('email', { type: 'manual', message: result.error })
             } else {
-              setError('other', { type: 'manual', message: result.error || result.message })
+              setError('confirmPassword', { type: 'manual', message: result.error || result.message })
             }
             setSubmitting(false)
             return
@@ -511,9 +525,8 @@ function Register({ registerInfo, loginFlow, baseUrl }) {
         if (['M_USER_IN_USE', 'M_INVALID_USERNAME', 'M_EXCLUSIVE'].indexOf(finalError.errcode) > -1) {
           setError('username', { type: 'manual', message: finalError.errcode === 'M_USER_IN_USE' ? 'Username is already taken' : msg })
         } else if (msg) {
-          setError('other', { type: 'manual', message: msg })
+          setError('confirmPassword', { type: 'manual', message: msg })
         }
-
         setSubmitting(false)
       })
   }
@@ -607,11 +620,12 @@ function Register({ registerInfo, loginFlow, baseUrl }) {
       >
         <Box
           sx={{
-            width: '154px',
+            width: '230px',
             height: '40px',
-            backgroundColor: 'red',
             marginBottom: '98px',
           }}
+          component="img"
+          src={authImageMap.authRegistry}
         />
       </Box>
       {!isDisabled && (
@@ -846,6 +860,22 @@ function Auth() {
   const [hsConfig, setHsConfig] = useState(null)
   const [process, setProcess] = useState({ isLoading: true, message: 'Loading homeserver list...' })
   const welcomeRef = useRef(null)
+  const logoRef = useRef(null)
+  const animationRef = useRef(null)
+  useIsomorphicLayoutEffect(() => {
+    if (!animationRef.current) {
+      if (!logoRef.current) return
+      animationRef.current = lottie.loadAnimation({
+        container: logoRef.current,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        animationData: ComputedAiboJson,
+      })
+    } else {
+      animationRef.current.show()
+    }
+  }, [])
 
   const init = async () => {
     if (localStorage.getItem(cons.secretKey.BASE_URL) === undefined) {
@@ -960,10 +990,20 @@ function Auth() {
           <Box
             sx={{
               width: '100%',
-              height: '414px',
-              backgroundColor: 'blue',
+              height: '427px',
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
             }}
-          />
+          >
+            <Box
+              sx={{
+                width: '100%',
+                height: '98vw',
+              }}
+              ref={logoRef}
+            />
+          </Box>
           <Box
             sx={{
               width: '100%',

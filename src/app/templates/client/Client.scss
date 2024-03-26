@@ -36,9 +36,12 @@
   align-items: center;
 }
 .loading__message {
-  max-width: 350px;
-  text-align: center;
-  transform: translateY(-100px);
+  margin-top: 16px;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 28px;
+  color: #E6EBF0;
+  font-family: Generic Techno, serif;
 }
 .loading__menu {
   position: absolute;

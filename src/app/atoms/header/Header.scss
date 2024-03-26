@@ -14,8 +14,8 @@
     min-width: 0;
     display: flex;
     align-items: center;
-    margin: 0 var(--sp-tight);
-    
+    margin: 0 8px;
+
     &:first-child {
       @include dir.side(margin, 0, var(--sp-tight));
     }

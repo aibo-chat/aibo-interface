@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import './SSOButtons.scss'
 
 import { Box, ButtonBase } from '@mui/material'
-import { createTemporaryClient, startSsoLogin } from '../../../client/action/auth'
+import { startSsoLogin } from '../../../client/action/auth'
 
 import Button from '../../atoms/button/Button'
 import authImageMap from '../../../images/authImageMap'

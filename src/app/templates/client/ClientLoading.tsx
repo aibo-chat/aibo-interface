@@ -3,16 +3,12 @@ import React, { useRef } from 'react'
 import { Box, Button } from '@mui/material'
 import { useIsomorphicLayoutEffect } from 'ahooks'
 import lottie, { AnimationItem } from 'lottie-web'
-import ContextMenu, { MenuItem } from '../../atoms/context-menu/ContextMenu'
-import initMatrix from '../../../client/initMatrix'
-import IconButton from '../../atoms/button/IconButton'
-import VerticalMenuIC from '../../../../public/res/ic/outlined/vertical-menu.svg'
 import Text from '../../atoms/text/Text'
 import SetPasswordModal from '../../components/SetPasswordModal'
 import { useMobxStore } from '../../../stores/StoreProvider'
 import clientLoadingImageMap from '../../../images/clientLoadingImageMap'
 import RefreshIcon from '../../../../public/res/svg/common/common_outlined_refresh_icon.svg?react'
-import DefedLogoJson from '../../../../public/res/json/defed_logo.json'
+import { ComputedAiboJson } from '../../../util/jsonComputed'
 
 interface IClientLoadingProps {
   loadingMsg: string
@@ -39,7 +35,7 @@ const ClientLoading: React.FC<IClientLoadingProps> = ({ loadingMsg }) => {
           renderer: 'svg',
           loop: true,
           autoplay: true,
-          animationData: DefedLogoJson,
+          animationData: ComputedAiboJson,
         })
       } else {
         animationRef.current.show()
@@ -52,25 +48,10 @@ const ClientLoading: React.FC<IClientLoadingProps> = ({ loadingMsg }) => {
   }
   return (
     <div className="loading-display">
-      <div className="loading__menu">
-        <ContextMenu
-          placement="bottom"
-          content={
-            (
-              <>
-                <MenuItem onClick={() => initMatrix.clearCacheAndReload()}>Clear cache & reload</MenuItem>
-                <MenuItem onClick={() => initMatrix.logout()}>Logout</MenuItem>
-              </>
-            ) as any
-          }
-          /* @ts-ignore */
-          render={(toggle) => <IconButton size="extra-small" onClick={toggle} src={VerticalMenuIC} />}
-        />
-      </div>
       <Box
         sx={{
-          width: '859px',
-          height: connectError ? 0 : '327px',
+          width: '300px',
+          height: connectError ? 0 : '300px',
         }}
         ref={logoRef}
       />
@@ -130,7 +111,7 @@ const ClientLoading: React.FC<IClientLoadingProps> = ({ loadingMsg }) => {
         </Box>
       ) : (
         <Text className="loading__message" variant="b2">
-          {loadingMsg}
+          Loading ...
         </Text>
       )}
       <SetPasswordModal />

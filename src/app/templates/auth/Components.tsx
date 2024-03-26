@@ -1,6 +1,4 @@
-import React, { ChangeEventHandler, CompositionEventHandler, FormEventHandler, KeyboardEventHandler, Ref } from 'react'
-
-import TextareaAutosize from 'react-autosize-textarea'
+import React, { ChangeEventHandler, CompositionEventHandler, KeyboardEventHandler, Ref } from 'react'
 import { Box, InputBase } from '@mui/material'
 
 interface IInputProps {

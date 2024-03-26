@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import './Client.scss'
 
 import { observer } from 'mobx-react-lite'
@@ -22,6 +22,7 @@ import { settingsAtom } from '../../state/settings'
 import { useMobxStore } from '../../../stores/StoreProvider'
 import ClientLoading from './ClientLoading'
 import IframeApp from '../../components/IframeApp'
+import { selectRoom } from '../../../client/action/navigation'
 
 function SystemEmojiFeature() {
   const [systemEmoji] = useSetting(settingsAtom, 'useSystemEmoji')
@@ -39,6 +40,7 @@ function Client() {
   const {
     initData,
     changeTargetProxy,
+    aiStore: { targetBotRoomId },
     appStore: { isAppLoading, changeIsAppLoading, connectError },
     modalStore: { iframeAppData, iframeAppDisplay },
   } = useMobxStore()
@@ -53,10 +55,10 @@ function Client() {
     roomWrapperRef.current?.classList.remove(classNameHidden)
   }
   function onNavigationSelected() {
-    navWrapperRef.current?.classList.remove(classNameHidden)
-    roomWrapperRef.current?.classList.add(classNameHidden)
+    // TODO: 最终屏蔽这里就可以了
+    // navWrapperRef.current?.classList.remove(classNameHidden)
+    // roomWrapperRef.current?.classList.add(classNameHidden)
   }
-
   useEffect(() => {
     navigation.on(cons.events.navigation.ROOM_SELECTED, onRoomSelected)
     navigation.on(cons.events.navigation.NAVIGATION_OPENED, onNavigationSelected)
@@ -92,6 +94,14 @@ function Client() {
     initMatrix.init()
   }, [])
 
+  useLayoutEffect(() => {
+    if (!isAppLoading && targetBotRoomId) {
+      setTimeout(() => {
+        selectRoom(targetBotRoomId)
+      }, 100)
+    }
+  }, [isAppLoading, targetBotRoomId])
+
   if (connectError || isAppLoading) {
     return <ClientLoading loadingMsg={loadingMsg} />
   }
@@ -100,7 +110,7 @@ function Client() {
     <MatrixClientProvider value={initMatrix.matrixClient}>
       <div className="client-container">
         <Box
-          className="navigation__wrapper"
+          className={`navigation__wrapper ${classNameHidden}`}
           ref={navWrapperRef}
           sx={{
             width: iframeAppData && iframeAppDisplay ? 'auto' : 'var(--navigation-width)',
@@ -109,7 +119,7 @@ function Client() {
           <Navigation />
         </Box>
         <Box
-          className={`room__wrapper ${classNameHidden}`}
+          className="room__wrapper"
           sx={{
             position: iframeAppData ? 'relative' : 'static',
           }}

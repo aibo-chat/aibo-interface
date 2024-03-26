@@ -4,6 +4,7 @@ import './RoomView.scss'
 import { Text, config } from 'folds'
 import { EventType } from 'matrix-js-sdk'
 
+import { Box } from '@mui/material'
 import cons from '../../../client/state/cons'
 import navigation from '../../../client/state/navigation'
 
@@ -99,7 +100,13 @@ function RoomView({ room, eventId }) {
               </>
             )}
           </div>
-          <RoomViewFollowing room={room} />
+          <Box
+            sx={{
+              width: '100%',
+              height: '39px',
+            }}
+          />
+          {/* <RoomViewFollowing room={room} /> */}
         </div>
       </div>
     </div>

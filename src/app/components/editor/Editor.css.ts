@@ -4,10 +4,9 @@ import { color, config, DefaultReset, toRem } from 'folds';
 export const Editor = style([
   DefaultReset,
   {
-    backgroundColor: color.SurfaceVariant.Container,
+    backgroundColor: '#FFF',
     color: color.SurfaceVariant.OnContainer,
-    boxShadow: `inset 0 0 0 ${config.borderWidth.B300} ${color.SurfaceVariant.ContainerLine}`,
-    borderRadius: config.radii.R400,
+    borderRadius: '8px',
     overflow: 'hidden',
   },
 ]);

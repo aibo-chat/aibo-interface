@@ -490,22 +490,12 @@ export const Message = as<'div', MessageProps>(
 
     const headerJSX = !collapse && (
       <Box gap="300" direction={messageLayout === 1 ? 'RowReverse' : 'Row'} justifyContent="SpaceBetween" alignItems="Baseline" grow="Yes">
-        <Username as="button" style={{ color: colorMXID(senderId) }} data-user-id={senderId} onContextMenu={onUserClick} onClick={onUsernameClick}>
+        <Username as="button" style={{ color: '#25B1FF' }} data-user-id={senderId}>
           <Text as="span" size={messageLayout === 2 ? 'T300' : 'T400'} truncate>
             <b>{substitutionString(senderDisplayName)}</b>
           </Text>
         </Username>
         <Box shrink="No" gap="100">
-          {messageLayout !== 1 && hover && (
-            <>
-              <Text as="span" size="T200" priority="300">
-                {substitutionStringForMatrixId(senderId)}
-              </Text>
-              <Text as="span" size="T200" priority="300">
-                |
-              </Text>
-            </>
-          )}
           <Time ts={mEvent.getTs()} compact={messageLayout === 1} />
         </Box>
       </Box>

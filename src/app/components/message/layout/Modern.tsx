@@ -7,17 +7,7 @@ type ModernLayoutProps = {
 }
 
 export const ModernLayout = as<'div', ModernLayoutProps>(({ before, children, ...props }, ref) => (
-  <Box
-    gap="300"
-    {...props}
-    ref={ref}
-    style={{
-      backgroundColor: 'red',
-    }}
-  >
-    <Box className={css.ModernBefore} shrink="No">
-      {before}
-    </Box>
+  <Box gap="300" {...props} ref={ref}>
     <Box grow="Yes" direction="Column">
       {children}
     </Box>

@@ -87,7 +87,7 @@ import FearGreedIndexMessage from '../../components/message/FearGreedIndexMessag
 import DailyDigestMessage from '../../components/message/DailyDigestMessage'
 import ETFMessage from '../../components/message/ETFMessage'
 import CommonTransferMessage from '../../components/message/CommonTransferMessage/CommonTransferMessage'
-import ConvertCardMessage from "../../components/message/ConvertCardMessage";
+import ConvertCardMessage from '../../components/message/ConvertCardMessage'
 
 // Thumbs up emoji found to have Variation Selector 16 at the end
 // so included variation selector pattern in regex
@@ -1536,12 +1536,18 @@ const RoomTimeline = (props: RoomTimelineProps) => {
           </Chip>
         </TimelineFloat>
       )}
-      <Scroll ref={scrollRef} visibility="Hover">
+      <Scroll
+        ref={scrollRef}
+        visibility="Hover"
+        style={{
+          paddingRight: 0,
+        }}
+      >
         <Box direction="Column" justifyContent="End" style={{ minHeight: '100%', padding: `${config.space.S600} 0` }}>
           {!canPaginateBack && rangeAtStart && getItems().length > 0 && (
             <div
               style={{
-                padding: `${config.space.S700} ${config.space.S400} ${config.space.S600} ${messageLayout === 1 ? config.space.S400 : toRem(64)}`,
+                padding: '0 16px',
               }}
             >
               <RoomIntro room={room} />

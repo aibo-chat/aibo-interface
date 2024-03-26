@@ -7,6 +7,7 @@ import { Transforms, Editor } from 'slate'
 import { Box, Dialog, Icon, IconButton, Icons, Line, Overlay, OverlayBackdrop, OverlayCenter, Scroll, Text, config, toRem } from 'folds'
 
 import { observer } from 'mobx-react-lite'
+import { ButtonBase } from '@mui/material'
 import { useMatrixClient } from '../../hooks/useMatrixClient'
 import {
   CustomEditor,
@@ -55,7 +56,7 @@ import { useScreenSize } from '../../hooks/useScreenSize'
 import { CommandAutocomplete } from './CommandAutocomplete'
 import { Command, SHRUG, useCommands } from '../../hooks/useCommands'
 import { mobileOrTablet } from '../../utils/user-agent'
-import RoomInputRightButtonPart from './RoomInputRightButtonPart'
+import SendIcon from '../../../../public/res/svg/common/common_fullfilled_send_icon.svg?react'
 import { useMobxStore } from '../../../stores/StoreProvider'
 import RawIcon from '../../atoms/system-icons/RawIcon'
 import ReplyArrowIC from '../../../../public/res/ic/outlined/reply-arrow.svg'
@@ -384,7 +385,7 @@ const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(({ editor, roomView
       <CustomEditor
         editableName="RoomInput"
         editor={editor}
-        placeholder="Send a message..."
+        placeholder="Ask me anything..."
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
         onPaste={handlePaste}
@@ -432,23 +433,17 @@ const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(({ editor, roomView
             ) : null}
           </>
         }
-        before={
-          <IconButton onClick={() => pickFile('*')} variant="SurfaceVariant" size="300" radii="300">
-            <Icon src={Icons.PlusCircle} />
-          </IconButton>
-        }
+        before={null}
         after={
-          <RoomInputRightButtonPart
-            toolbar={toolbar}
-            setToolbar={setToolbar}
-            imagePackRooms={imagePackRooms}
-            handleEmoticonSelect={handleEmoticonSelect}
-            handleStickerSelect={handleStickerSelect}
-            editor={editor}
-            hideStickerBtn={hideStickerBtn}
-            submit={submit}
-            currentRoom={room}
-          />
+          <ButtonBase onClick={submit}>
+            <SendIcon
+              style={{
+                width: '24px',
+                height: '24px',
+                fill: '#25B1FF',
+              }}
+            />
+          </ButtonBase>
         }
         bottom={
           toolbar && (

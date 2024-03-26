@@ -56,7 +56,7 @@ const TemplateData = [
   },
   {
     id: 'concept_analysis',
-    name: 'Concept&Analysis',
+    name: 'Trends Topic',
     icon: QuestionTemplateImageMap.questionTemplateConceptAnalysisIcon,
   },
 ]
@@ -90,24 +90,46 @@ const KindPart: React.FC<{
   return (
     <Box
       sx={{
-        width: { xs: '230px', lg: '212px' },
-        borderRadius: { xs: '8px', lg: '16px' },
-        backgroundColor: '#F8F8FB',
+        boxSizing: 'border-box',
+        width: { xs: '182px', lg: '212px' },
+        borderRadius: '0px 8px 8px 8px',
+        backgroundColor: '#FFFFFF',
         marginRight: { xs: 0, lg: isLastOne ? 0 : '16px' },
         display: 'flex',
-        flexDirection: { xs: 'row', lg: 'column' },
-        alignItems: { xs: 'flex-start', lg: 'center' },
-        padding: { xs: '8px', lg: '16px 27px' },
+        flexDirection: { xs: 'column', lg: 'column' },
+        alignItems: { xs: 'center', lg: 'center' },
+        padding: { xs: '8px 12px 12px', lg: '16px 27px' },
         flexShrink: 0,
+        height: '188px',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
+      {totalLength > MaxQuestionDisplay ? (
+        <ButtonBase
+          sx={{
+            marginLeft: '4px',
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+          }}
+          onClick={changeNextCurrentIndex}
+        >
+          <RefreshIcon
+            style={{
+              width: '14px',
+              height: '14px',
+              stroke: '#BFC6CD',
+            }}
+          />
+        </ButtonBase>
+      ) : null}
       <Box
         sx={{
-          width: { xs: '44px', lg: '55px' },
-          height: { xs: '44px', lg: '55px' },
-          borderRadius: '16px',
-          marginBottom: { xs: 0, lg: '12px' },
-          marginRight: { xs: '12px', lg: 0 },
+          width: '40px',
+          height: '40px',
+          marginBottom: { xs: '7px', lg: '12px' },
+          marginRight: { xs: 0, lg: 0 },
           flexShrink: 0,
         }}
         component="img"
@@ -120,12 +142,12 @@ const KindPart: React.FC<{
       >
         <Box
           sx={{
-            color: '#191919',
-            fontSize: '16px',
-            fontStyle: 'normal',
-            fontWeight: 500,
+            color: '#23282D',
+            fontSize: '12px',
+            fontWeight: 400,
+            fontFamily: 'Generic Techno',
             lineHeight: 'normal',
-            marginBottom: { xs: '12px', lg: '16px' },
+            marginBottom: { xs: '16px', lg: '16px' },
             flexShrink: 0,
             display: 'flex',
             alignItems: 'center',
@@ -133,30 +155,14 @@ const KindPart: React.FC<{
           }}
         >
           {t(targetInfo?.name)}
-          {totalLength > MaxQuestionDisplay ? (
-            <ButtonBase
-              sx={{
-                marginLeft: '4px',
-              }}
-              onClick={changeNextCurrentIndex}
-            >
-              <RefreshIcon
-                style={{
-                  width: '14px',
-                  height: '14px',
-                  stroke: '#62A1FF',
-                }}
-              />
-            </ButtonBase>
-          ) : null}
         </Box>
         <Box
           sx={{
-            color: '#808080',
-            fontSize: '14px',
+            color: '#78828C',
+            fontSize: '12px',
             fontStyle: 'normal',
             fontWeight: 500,
-            lineHeight: { xs: '17px', lg: 'normal' },
+            lineHeight: { xs: '14px', lg: 'normal' },
             width: '100%',
           }}
         >
@@ -185,17 +191,19 @@ const KindPart: React.FC<{
                 }}
               >
                 {question.name}
-                <ArrowIcon
-                  style={{
-                    width: '12px',
-                    height: '8px',
-                  }}
-                />
+                <Box>
+                  <ArrowIcon
+                    style={{
+                      width: '12px',
+                      height: '8px',
+                    }}
+                  />
+                </Box>
               </ButtonBase>
               {index !== filteredArray.length - 1 ? (
                 <Box
                   sx={{
-                    margin: { xs: '6px 0', lg: '8px 0' },
+                    margin: { xs: '12px 0', lg: '8px 0' },
                     width: '100%',
                     borderBottom: '1px dashed #E8E8EC',
                   }}
@@ -319,7 +327,7 @@ const QuestionTemplate: React.FC<IQuestionTemplateProps> = ({ timelineSet, mEven
           <Swiper
             pagination={false}
             direction="horizontal"
-            slidesPerView={1.1}
+            slidesPerView={1.8}
             style={{ overflow: 'visible' }}
             simulateTouch={false}
             initialSlide={0}

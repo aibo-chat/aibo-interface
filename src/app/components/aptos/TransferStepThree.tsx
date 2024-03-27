@@ -1,15 +1,23 @@
 import { Box } from "@mui/material";
 import React from "react";
-import { formatAddress } from "../../hooks/aptos/utils";
+import { formatAddress, getExplorerLink } from "../../hooks/aptos/utils";
 import SuccessSvg from '../../../../public/aptos/Success.svg?react'
 import LinkSvg from '../../../../public/aptos/Link.svg?react'
 
 export function AptosTransferStepThree({
   toAddress,
   fromAddress,
+  coin,
+  sendAmount,
+  txHash,
+  networkName
 }: {
   toAddress: string
   fromAddress: string | undefined
+  coin: string
+  sendAmount: string
+  txHash: string
+  networkName: string | undefined
 }) {
   return (
     <Box>
@@ -21,7 +29,7 @@ export function AptosTransferStepThree({
       }}>
         <SuccessSvg />
         <Box sx={{ mt: 3 }}>
-          0.002 APT
+          {sendAmount} {coin}
         </Box>
       </Box>
 
@@ -58,7 +66,10 @@ export function AptosTransferStepThree({
           alignItems: 'center'
         }}>
           <span style={{ color: '#78828C' }}>Tx hash</span>
-          <span style={{ marginBottom: -2 }}><LinkSvg /></span>
+
+          <a style={{ marginBottom: -2 }} target="_blank" href={getExplorerLink(txHash, networkName)}>
+            <LinkSvg />
+          </a>
         </Box>
       </Box>
     </Box>

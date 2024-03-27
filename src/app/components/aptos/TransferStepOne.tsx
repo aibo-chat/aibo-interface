@@ -1,6 +1,9 @@
-import { Box, Button, InputBase } from "@mui/material";
+import { Box, Button, InputBase, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import React from "react";
 import { InputAmountBar } from "./InputBar";
+import { AptosUserAssetData } from "../../hooks/aptos/type";
+import { ImageJsonData } from "../../hooks/aptos/coin-map";
+import { formatAmount } from "../../hooks/aptos/utils";
 
 export function AptosTransferStepOne({
   handleNext,
@@ -10,7 +13,11 @@ export function AptosTransferStepOne({
   setSendAmount,
   percentage,
   setPercentage,
-  changeAmountByBar
+  changeAmountByBar,
+  handleSelectCoin,
+  selectCoin,
+  userHoldCoinList,
+  selectCoinData
 }: {
   handleNext: () => void;
   setToAddress: React.Dispatch<React.SetStateAction<string>>;
@@ -20,6 +27,10 @@ export function AptosTransferStepOne({
   changeAmountByBar: (value: number) => void;
   percentage: number;
   setPercentage: React.Dispatch<React.SetStateAction<number>>;
+  handleSelectCoin: (event: SelectChangeEvent) => void;
+  selectCoin: string;
+  userHoldCoinList: AptosUserAssetData[]
+  selectCoinData: AptosUserAssetData
 }) {
   return (
     <Box>
@@ -56,15 +67,84 @@ export function AptosTransferStepOne({
 
         <Box sx={{
           borderRadius: '8px',
-          px: 2,
           height: 36,
           border: '1px solid #F0F5FA',
           bgcolor: '#FAFAFA'
         }}>
-          <InputBase
-            fullWidth
-            sx={{ height: 36 }}
-          />
+          <Select
+            value={selectCoin}
+            onChange={handleSelectCoin}
+            variant="outlined"
+            className="AssetInput__select"
+            sx={{
+              width: '100%',
+              '&.AssetInput__select .MuiSelect-select': {
+                py: 0,
+                backgroundColor: 'transparent',
+                pr: '16px !important',
+                pl: 2,
+                height: 36,
+              },
+              '&.AssetInput__select .MuiOutlinedInput-notchedOutline': { display: 'none' },
+            }}
+            renderValue={() => {
+              return (
+                <Box sx={{
+                  color: '#78828C',
+                  fontSize: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: 36,
+                }}>
+                  <Box
+                    component={'img'}
+                    src={ImageJsonData[selectCoinData.asset_type].logo_url}
+                    sx={{
+                      width: 20,
+                      height: 20,
+                    }}
+                  />
+                  <Box component={'span'} sx={{ fontSize: '14px', color: '#23282D', ml: 2 }}>
+                    {selectCoinData.metadata.symbol}
+                  </Box>
+                  <Box component={'span'} sx={{ ml: 2 }}>
+                    {selectCoinData.metadata.name}
+                  </Box>
+                  {/* <Box component={'span'} sx={{ ml: 2 }}>
+                    {formatAmount(selectCoinData)}
+                  </Box> */}
+                </Box>
+              )
+            }}
+          >
+            {userHoldCoinList.map((token, index) => (
+              <MenuItem
+                key={index}
+                value={token.asset_type}
+                sx={{
+                  color: '#78828C',
+                  fontSize: '12px',
+                }}>
+                <Box
+                  component={'img'}
+                  src={ImageJsonData[token.asset_type].logo_url}
+                  sx={{
+                    width: 20,
+                    height: 20,
+                  }}
+                />
+                <Box component={'span'} sx={{ fontSize: '14px', color: '#23282D', ml: 2 }}>
+                  {token.metadata.symbol}
+                </Box>
+                <Box component={'span'} sx={{ ml: 2 }}>
+                  {token.metadata.name}
+                </Box>
+                <Box component={'span'} sx={{ ml: 'auto' }}>
+                  {formatAmount(token)}
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
         </Box>
       </Box>
 

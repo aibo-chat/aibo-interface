@@ -1,18 +1,48 @@
-import { Box, Button } from "@mui/material";
-import React from "react";
+import { Box, Button, CircularProgress } from "@mui/material";
+import React, { ReactNode, useEffect, useState } from "react";
 import { formatAddress } from "../../hooks/aptos/utils";
+import { AptosUserAssetData } from "../../hooks/aptos/type";
+import { useTransaction } from "../../hooks/aptos/useTransaction";
+import { valueToBigNumber } from "../../utils/math-utils-v2";
 
 export function AptosTransferStepTwo({
   handleBack,
   toAddress,
   fromAddress,
-  handleConfirm
+  handleConfirm,
+  sendAmount,
+  selectCoinData
 }: {
   handleBack: () => void
   toAddress: string
   fromAddress: string | undefined
   handleConfirm: () => void
+  sendAmount: string
+  selectCoinData: AptosUserAssetData
 }) {
+
+  const { simulateTransferFee } = useTransaction()
+  const [txFee, setTxFee] = useState('')
+
+  const getTxFee = async () => {
+    const amount = valueToBigNumber(sendAmount).shiftedBy(selectCoinData.metadata.decimals).toFixed(0, 1)
+    const result = await simulateTransferFee({
+      amount,
+      address: toAddress,
+      coinType: selectCoinData.asset_type
+    })
+    if (result) {
+      // console.log('result', result);
+      const { gas_unit_price, gas_used } = result
+      const fee = valueToBigNumber(gas_unit_price).times(gas_used).shiftedBy(-8).toString()
+      setTxFee(fee)
+    }
+  }
+
+  useEffect(() => {
+    getTxFee()
+  }, [])
+
   return (
     <Box>
 
@@ -21,8 +51,32 @@ export function AptosTransferStepTwo({
       <InfoLabel label="To" value={formatAddress(toAddress)} />
 
       <InfoLabel
-        label="Total Cost(Amount+Fee)"
-        value={'xxxx'}
+        label="Total Cost(Amount + Fee)"
+        value={(
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+          }}>
+            <Box component={'span'}>
+              {sendAmount} {selectCoinData.metadata.symbol} +
+            </Box>
+            <Box sx={{ ml: 1 }}>
+              {!txFee ? (
+                <CircularProgress color="inherit" size="16px" />
+              ) : (
+                <Box sx={{
+                  bgcolor: '#BBEBFF',
+                  fontSize: '12px',
+                  px: 2,
+                  py: 1,
+                  borderRadius: '8px',
+                }}>
+                  {txFee} APT
+                </Box>
+              )}
+            </Box>
+          </Box>
+        )}
       />
 
       <Box sx={{ display: 'flex', mt: 6, justifyContent: 'space-between' }}>
@@ -64,7 +118,7 @@ export function AptosTransferStepTwo({
 }
 
 
-function InfoLabel({ label, value }: { label: string; value: string }) {
+function InfoLabel({ label, value }: { label: string; value: ReactNode }) {
   return (
     <Box sx={{ mt: 4 }}>
       <Box sx={{ mb: 1, color: '#78828C', fontSize: '14px' }}>

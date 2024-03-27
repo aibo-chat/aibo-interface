@@ -1,4 +1,18 @@
-{
+interface Data {
+  caution?: boolean
+  chainId: number
+  decimals: number
+  logo_url: string
+  name: string
+  order: number
+  source?: string
+  type: string
+  symbol: string
+  symbol_with_bridge: string
+  unsafe?: boolean
+}
+
+export const ImageJsonData: { [key: string]: Data } = {
   "0x1::aptos_coin::AptosCoin": {
     "caution": false,
     "chainId": 2,

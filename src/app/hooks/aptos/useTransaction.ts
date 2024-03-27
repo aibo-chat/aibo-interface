@@ -1,6 +1,8 @@
 import { useWallet, InputTransactionData } from "@aptos-labs/wallet-adapter-react";
 import { aptosClient } from "./utils";
 import { Ed25519PublicKey } from "@aptos-labs/ts-sdk";
+import { useEffect, useState } from "react";
+import { AptosUserAssetData } from "./type";
 
 export function useTransaction() {
   const {
@@ -9,6 +11,16 @@ export function useTransaction() {
     signAndSubmitTransaction,
   } = useWallet();
 
+  //账户资产列表
+  const [userAsset, setUserAsset] = useState<AptosUserAssetData[]>()
+  useEffect(() => {
+    if (account?.address && network?.name) {
+      getCoinBalance()
+    } else {
+      setUserAsset([])
+    }
+  }, [account?.address, network?.name])
+
   //获取用户已经注册过的 Token 余额列表
   const getCoinBalance = async () => {
     if (!account || !network) {
@@ -16,8 +28,8 @@ export function useTransaction() {
     }
     const result = await aptosClient(network.name.toLowerCase()).getAccountCoinsData({
       accountAddress: account.address,
-    })
-    return result
+    }) as any
+    setUserAsset(result)
   }
 
   /**
@@ -85,11 +97,16 @@ export function useTransaction() {
     const data = await aptosClient(network?.name.toLowerCase()).transaction.simulate.simple({
       signerPublicKey: new Ed25519PublicKey(account.publicKey as string),
       transaction: rawTx,
+      options: {
+        estimateGasUnitPrice: true,
+        estimateMaxGasAmount: true,
+      }
     })
     return data[0]
   }
 
   return {
+    userAsset,
     getCoinBalance,
     transfer,
     simulateTransferFee

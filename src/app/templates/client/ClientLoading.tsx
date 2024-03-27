@@ -8,7 +8,7 @@ import SetPasswordModal from '../../components/SetPasswordModal'
 import { useMobxStore } from '../../../stores/StoreProvider'
 import clientLoadingImageMap from '../../../images/clientLoadingImageMap'
 import RefreshIcon from '../../../../public/res/svg/common/common_outlined_refresh_icon.svg?react'
-import { ComputedAiboJson } from '../../../util/jsonComputed'
+import AiboJSON from '../../../../public/res/json/aibo.json'
 
 const ClientLoading: React.FC = () => {
   const {
@@ -31,7 +31,7 @@ const ClientLoading: React.FC = () => {
           renderer: 'svg',
           loop: true,
           autoplay: true,
-          animationData: ComputedAiboJson,
+          animationData: AiboJSON,
         })
       } else {
         animationRef.current.show()

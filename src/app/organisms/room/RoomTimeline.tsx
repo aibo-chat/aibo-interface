@@ -87,7 +87,7 @@ import FearGreedIndexMessage from '../../components/message/FearGreedIndexMessag
 import DailyDigestMessage from '../../components/message/DailyDigestMessage'
 import ETFMessage from '../../components/message/ETFMessage'
 import CommonTransferMessage from '../../components/message/CommonTransferMessage/CommonTransferMessage'
-import ConvertCardMessage from '../../components/message/ConvertCardMessage'
+import ConvertCardMessage from '../../components/message/ConvertCardMessage/ConvertCardMessage'
 
 // Thumbs up emoji found to have Variation Selector 16 at the end
 // so included variation selector pattern in regex

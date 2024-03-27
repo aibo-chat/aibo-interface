@@ -7,7 +7,7 @@ import lottie, { AnimationItem } from 'lottie-web'
 import { useIsomorphicLayoutEffect } from 'ahooks'
 import Text from '../../atoms/text/Text'
 import SetPasswordModal from '../../components/SetPasswordModal'
-import { ComputedAiboJson } from '../../../util/jsonComputed'
+import AiboJSON from '../../../../public/res/json/aibo.json'
 
 function Welcome() {
   const logoRef = useRef<HTMLDivElement>(null)
@@ -20,7 +20,7 @@ function Welcome() {
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        animationData: ComputedAiboJson,
+        animationData: AiboJSON,
       })
     } else {
       animationRef.current.show()

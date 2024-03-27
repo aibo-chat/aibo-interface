@@ -27,7 +27,7 @@ import SSOButtons from '../../molecules/sso-buttons/SSOButtons'
 import { MatrixHomeServer } from '../../../constant'
 import authImageMap from '../../../images/authImageMap'
 import { AuthInput } from './Components'
-import { ComputedAiboJson } from '../../../util/jsonComputed'
+import AiboJSON from '../../../../public/res/json/aibo.json'
 
 const LOCALPART_SIGNUP_REGEX = /^[a-z0-9_\-.=/]+$/
 const BAD_LOCALPART_ERROR = "Username can only contain characters a-z, 0-9, or '=_-./'"
@@ -866,7 +866,7 @@ function Auth() {
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        animationData: ComputedAiboJson,
+        animationData: AiboJSON,
       })
     } else {
       animationRef.current.show()

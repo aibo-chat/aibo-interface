@@ -21,7 +21,7 @@ export function TestPage() {
         disconnect
       </button>
 
-      <AptosTransfer />
+      <AptosTransfer aiInputAmount="0.3" aiTokenSymbol="USDT" />
 
     </div>
   )

@@ -62,7 +62,7 @@ export function AptosTransferStepTwo({
             </Box>
             <Box sx={{ ml: 1 }}>
               {!txFee ? (
-                <CircularProgress color="inherit" size="16px" />
+                <CircularProgress color="inherit" size="14px" />
               ) : (
                 <Box sx={{
                   bgcolor: '#BBEBFF',

@@ -1,7 +1,7 @@
 import { Box, SelectChangeEvent } from "@mui/material";
 import { AptosTransferStepOne } from "./TransferStepOne"
 import { AptosTransferStepTwo } from "./TransferStepTwo"
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AccountAddress, APTOS_COIN } from "@aptos-labs/ts-sdk";
 import TransferSvg from '../../../../public/aptos/Transfer.svg?react'
 import { useTransaction } from "../../hooks/aptos/useTransaction"
@@ -11,6 +11,7 @@ import { AptosTransferStepThree } from "./TransferStepThree";
 import { valueToBigNumber } from "../../utils/math-utils-v2";
 import { formatAmount } from "../../hooks/aptos/utils";
 import snackbarUtils from '../../../util/SnackbarUtils'
+import BigNumber from "bignumber.js";
 
 //aiSelectTokenSymbol 通过 AI 识别出的 aiSelectTokenSymbol
 export function AptosTransfer({
@@ -28,8 +29,7 @@ export function AptosTransfer({
 
   const [step, setStep] = useState(1)
 
-  //aiTokenSymbol => token 地址
-  const [selectCoin, setSelectCoin] = useState(aiTokenSymbol || APTOS_COIN)
+  const [selectCoin, setSelectCoin] = useState(APTOS_COIN)
 
   //账户持有的所有 token
   const userHoldCoinList: AptosUserAssetData[] = useMemo(() => {
@@ -38,22 +38,52 @@ export function AptosTransfer({
     return userAsset
   }, [userAsset])
 
+  //aiTokenSymbol => token 地址 => 根据 symbol 找不到地址就显示 APT
+  const initRef = useRef(true)
+  useEffect(() => {
+    if (aiTokenSymbol && initRef.current === true) {
+      const selectToken = userHoldCoinList.find(
+        (coin) => coin.metadata.symbol.toLowerCase().includes(aiTokenSymbol.toLowerCase())
+      )
+      if (selectToken) {
+        setSelectCoin(selectToken.asset_type)
+        initRef.current = false
+      }
+      // console.log('aiTokenSymbol', aiTokenSymbol)
+      // console.log('userHoldCoinList', userHoldCoinList)
+    }
+  }, [aiTokenSymbol, userHoldCoinList])
+
   const selectCoinData = useMemo(() => {
     return userHoldCoinList.find((asset) => asset.asset_type === selectCoin) || BASE_COIN_DATA
   }, [userHoldCoinList, selectCoin])
 
+  const selectCoinBalance = useMemo(() => {
+    return formatAmount(selectCoinData)
+  }, [selectCoinData])
+
   const [sendAmount, setSendAmount] = useState(aiInputAmount || '')
   const [toAddress, setToAddress] = useState(aiToAddress || '')
-  const [percentage, setPercentage] = useState(0)
+
+  const percentage = useMemo(() => {
+    const currentPercent = selectCoinBalance && sendAmount && !new BigNumber(selectCoinBalance).isZero() && !new BigNumber(sendAmount).isZero()
+      ? new BigNumber(sendAmount).dividedBy(new BigNumber(selectCoinBalance).decimalPlaces(4, BigNumber.ROUND_FLOOR)).decimalPlaces(2).times(100).toNumber()
+      : 0
+    return Math.min(100, currentPercent)
+  }, [sendAmount, selectCoinBalance])
 
   const handleSelectCoin = (event: SelectChangeEvent) => {
     setSelectCoin(event.target.value)
     setSendAmount('')
   }
 
+  const handleAmountChange = (value: string) => {
+    setSendAmount(value)
+  }
+
   const changeAmountByBar = (value: number) => {
-    // const computedAmount = valueToBigNumber(maxAmountToTransfer).times(value).shiftedBy(-2).toFixed(4, 1)
-    // setSendAmount(computedAmount)
+    const computedAmount = valueToBigNumber(selectCoinBalance).times(value).shiftedBy(-2).toFixed(4, 1)
+    setSendAmount(computedAmount)
   }
 
   const handleNext = () => {
@@ -63,6 +93,10 @@ export function AptosTransfer({
     if (inputAmount.gt(selectCoinData.amount)) {
       //转账的数量大于了余额
       snackbarUtils.error('The amount transferred exceeds the balance')
+      return
+    }
+    if (inputAmount.isZero()) {
+      snackbarUtils.error('The transfer amount needs to be greater than 0')
       return
     }
     //校验地址是否合法
@@ -121,7 +155,7 @@ export function AptosTransfer({
           fontSize: '12px',
           color: '#25B1FF'
         }}>
-          BALANCE: {formatAmount(selectCoinData)}
+          BALANCE: {selectCoinBalance}
         </Box>
       </Box>
 
@@ -131,9 +165,8 @@ export function AptosTransfer({
           setToAddress={setToAddress}
           toAddress={toAddress}
           sendAmount={sendAmount}
-          setSendAmount={setSendAmount}
+          handleAmountChange={handleAmountChange}
           percentage={percentage}
-          setPercentage={setPercentage}
           changeAmountByBar={changeAmountByBar}
           handleSelectCoin={handleSelectCoin}
           selectCoin={selectCoin}

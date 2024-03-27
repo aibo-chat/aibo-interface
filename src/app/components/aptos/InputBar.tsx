@@ -77,17 +77,14 @@ const PrettoSlider = styled(Slider)({
 export function InputAmountBar({
   sx,
   percentage,
-  setPercentage,
   changeAmountByBar
 }: {
   sx?: SxProps<Theme>
   percentage: number
-  setPercentage: Dispatch<SetStateAction<number>>
   changeAmountByBar: (value: number) => void
 }) {
 
   const handleChange = (event: Event, value: number | number[]) => {
-    setPercentage(value as number)
     changeAmountByBar(value as number)
   }
 
@@ -120,7 +117,6 @@ export function InputAmountBar({
             }}
             key={index}
             onClick={() => {
-              setPercentage(item.value)
               changeAmountByBar(item.value)
             }}
           >

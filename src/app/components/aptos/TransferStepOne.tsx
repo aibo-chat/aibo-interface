@@ -10,9 +10,8 @@ export function AptosTransferStepOne({
   setToAddress,
   toAddress,
   sendAmount,
-  setSendAmount,
+  handleAmountChange,
   percentage,
-  setPercentage,
   changeAmountByBar,
   handleSelectCoin,
   selectCoin,
@@ -23,10 +22,9 @@ export function AptosTransferStepOne({
   setToAddress: React.Dispatch<React.SetStateAction<string>>;
   toAddress: string;
   sendAmount: string;
-  setSendAmount: React.Dispatch<React.SetStateAction<string>>;
+  handleAmountChange: (value: string) => void;
   changeAmountByBar: (value: number) => void;
   percentage: number;
-  setPercentage: React.Dispatch<React.SetStateAction<number>>;
   handleSelectCoin: (event: SelectChangeEvent) => void;
   selectCoin: string;
   userHoldCoinList: AptosUserAssetData[]
@@ -163,14 +161,13 @@ export function AptosTransferStepOne({
             sx={{ height: 36 }}
             type="number"
             value={sendAmount}
-            onChange={(e) => setSendAmount(e.target.value)}
+            onChange={(e) => handleAmountChange(e.target.value)}
           />
         </Box>
       </Box>
 
       <InputAmountBar
         percentage={percentage}
-        setPercentage={setPercentage}
         changeAmountByBar={changeAmountByBar}
       />
 

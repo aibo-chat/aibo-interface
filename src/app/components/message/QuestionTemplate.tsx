@@ -224,7 +224,7 @@ const QuestionTemplate: React.FC<IQuestionTemplateProps> = ({ timelineSet, mEven
   const mobileStyles = useMemo(() => {
     if (isMobile) {
       if (messageBody?.kinds?.length) {
-        if (swiperIndex === messageBody.kinds.length - 1) {
+        if (swiperIndex === messageBody.kinds.length - 2) {
           return {
             maskStyle: {
               maskImage: 'none',
@@ -329,7 +329,7 @@ const QuestionTemplate: React.FC<IQuestionTemplateProps> = ({ timelineSet, mEven
             direction="horizontal"
             slidesPerView={1.8}
             style={{ overflow: 'visible' }}
-            simulateTouch={false}
+            simulateTouch
             initialSlide={0}
             onSwiper={(swiper: SwiperClass) => {
               swiperRef.current = swiper

@@ -94,6 +94,7 @@ const TokenDataMessage: React.FC<ITokenDataMessageProps> = ({ timelineSet, mEven
       return []
     }
   }, [messageBody.answer])
+
   const data = useMemo(() => (Array.isArray(newsContent) ? newsContent[0] : null), [newsContent])
   const {
     appStore: { userAccount },

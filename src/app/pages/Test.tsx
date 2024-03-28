@@ -3,9 +3,12 @@ import WalletButtons from "../components/aptos/WalletButtons"
 import { useWallet } from "@aptos-labs/wallet-adapter-react"
 import { AptosTransfer } from "../components/aptos/Transfer"
 import { formatAddress } from "../hooks/aptos/utils"
+import { useConvert } from "../hooks/aptos/useConvert"
 
 export function TestPage() {
   const { disconnect, connected, account } = useWallet()
+
+  useConvert()
 
   return (
     <div>

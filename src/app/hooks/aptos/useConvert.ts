@@ -13,7 +13,7 @@ export interface IConvertTokenList {
   logoURI: string;
 }
 
-const rawTokenList = rawTokenListJson.map((item) => {
+const rawTokenList = rawTokenListJson.sort((a, b) => a.symbol.localeCompare(b.symbol)).map((item) => {
   return {
     ...item,
     balance: 0
@@ -31,13 +31,15 @@ export function useConvert() {
       const { amount, metadata: { decimals } } = coinData
       balanceData[coinData.asset_type] = valueToBigNumber(amount).shiftedBy(-decimals).toNumber()
     })
-    return rawTokenList.map((item) => ({
+    const tokenListSortBySymbol = rawTokenList.map((item) => ({
       ...item,
       balance: balanceData[item.address] || 0
     }))
+    //将有余额的数据排序到前面
+    return tokenListSortBySymbol.filter((item) => item.balance).concat(tokenListSortBySymbol.filter((item) => !item.balance))
   }, [userAsset])
 
-  console.log('convertTokenList', convertTokenList)
+  // console.log('convertTokenList', convertTokenList)
 
   return {
     convertTokenList

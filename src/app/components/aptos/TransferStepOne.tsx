@@ -199,7 +199,7 @@ export function AptosTransferStepOne({
           color: '#fff',
           fontSize: '14px',
           m: 'auto',
-          fontWeight: 700,
+          fontWeight: 500,
           ':hover': {
             bgcolor: '#25B1FF',
             opacity: '.8',

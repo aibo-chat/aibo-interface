@@ -88,7 +88,7 @@ export function AptosTransferStepTwo({
           width: 150,
           color: '#25B1FF',
           fontSize: '14px',
-          fontWeight: 700,
+          fontWeight: 500,
           ':hover': {
             bgcolor: '#fff',
             opacity: '.8',
@@ -104,7 +104,7 @@ export function AptosTransferStepTwo({
           width: 150,
           color: '#fff',
           fontSize: '14px',
-          fontWeight: 700,
+          fontWeight: 500,
           ':hover': {
             bgcolor: '#25B1FF',
             opacity: '.8',

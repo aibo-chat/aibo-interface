@@ -70,6 +70,17 @@ const CommonTransferMessage: React.FC<IAiTransferMessageProps> = ({ timelineSet,
         width: '100%',
       }}
     >
+      <Box
+        sx={{
+          fontSize: '15px',
+          fontWeight: 420,
+          lineHeight: '22px',
+          marginBottom: '8px',
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+        {messageBody?.head_title}
+      </Box>
       {messageBody?.result ? (
         <AptosTransferStepThree
           toAddress={messageBody.result.toAddress}

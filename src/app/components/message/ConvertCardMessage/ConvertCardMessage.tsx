@@ -60,6 +60,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
   const toAmount = useMemo(() => new BigNumber(fromAmount || 0).times(1.2).toFormat(4), [fromAmount])
   const exchangeRate = useMemo(() => (fromAmount && toAmount && !new BigNumber(fromAmount).isZero() ? new BigNumber(toAmount).div(fromAmount).toFormat(4) : '0'), [fromAmount, toAmount])
   const route = useMemo(() => [fromToken?.symbol, toToken?.symbol], [fromToken?.symbol, toToken?.symbol])
+  const fee = useMemo(() => new BigNumber(fromAmount || 0).times(0.01).toFormat(4), [fromAmount])
   const fromTokenList = useMemo<Array<ConvertTokenData>>(
     () => [
       {
@@ -212,7 +213,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
                   height: swiperIndex === 1 ? 'auto' : '0px',
                 }}
               >
-                <StepTwo />
+                <StepTwo fromToken={fromToken} toToken={toToken} fromAmount={fromAmount} toAmount={toAmount} exchangeRate={exchangeRate} fee={fee} />
               </SwiperSlide>
             </Swiper>
             <Box
@@ -234,7 +235,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
                     color: '#fff',
                     fontSize: '14px',
                     m: 'auto',
-                    fontWeight: 700,
+                    fontWeight: 500,
                     ':hover': {
                       bgcolor: '#25B1FF',
                       opacity: '.8',
@@ -255,7 +256,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
                       width: 150,
                       color: '#25B1FF',
                       fontSize: '14px',
-                      fontWeight: 700,
+                      fontWeight: 500,
                       ':hover': {
                         bgcolor: '#fff',
                         opacity: '.8',
@@ -274,7 +275,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
                       color: '#fff',
                       fontSize: '14px',
                       m: 'auto',
-                      fontWeight: 700,
+                      fontWeight: 500,
                       ':hover': {
                         bgcolor: '#25B1FF',
                         opacity: '.8',

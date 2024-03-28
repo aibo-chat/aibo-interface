@@ -9,6 +9,7 @@ import { formatTime } from '../../utils/common'
 import { BotAnswerMessageContent, TContentData } from '../../../types/defed/message'
 import { getMessageContent } from '../../hooks/useMessageContent'
 import { useMobxStore } from '../../../stores/StoreProvider'
+import FeedsPostMessageLog from '../../../../public/res/svg/feeds_news/feeds_post_message_log.svg?react'
 
 export interface SinglePostData {
   bullish: boolean
@@ -154,8 +155,7 @@ const FeedsSinglePost = observer(
       <Box
         sx={{
           display: 'flex',
-          borderTop: '1px solid #EBF0F5',
-          padding: '16px',
+          padding: '8px 12px',
           flexDirection: 'column',
         }}
       >
@@ -200,12 +200,13 @@ const FeedsSinglePost = observer(
                 right: 0,
                 bottom: 0,
                 fontSize: '14px',
+                fontWeight: 400,
                 backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.01) 0%, #ffffff, 1em, #ffffff)',
               }}
               onClick={clickReadAll}
             >
               <Box component="span">...</Box>
-              <Box component="span" sx={{ color: '#4128D1', ml: 1 }}>
+              <Box component="span" sx={{ color: '#25B1FF', ml: 1 }}>
                 Read all
               </Box>
             </Box>
@@ -293,18 +294,30 @@ const FeedsPostMessage: React.FC<IFeedsPostMessageProps> = ({ timelineSet, mEven
   return (
     <Box
       sx={{
-        width: '398px',
-        borderRadius: '20px',
-        border: '1px solid #F2F2F2',
+        width: { xs: '100%', lg: '398px' },
+        borderRadius: '0px 8px 8px 8px',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        backgroundColor: '#FFF',
       }}
     >
       <Box
         sx={{
           width: '100%',
-          backgroundColor: '#FFF',
+          padding: '7px 12px 0',
+        }}
+      >
+        <FeedsPostMessageLog
+          style={{
+            width: '87px',
+            height: '21px',
+          }}
+        />
+      </Box>
+      <Box
+        sx={{
+          width: '100%',
         }}
       >
         <Swiper

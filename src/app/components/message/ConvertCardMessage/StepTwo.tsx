@@ -2,12 +2,12 @@ import { observer } from 'mobx-react-lite'
 import React from 'react'
 import { Box } from '@mui/material'
 import { BigNumber } from 'bignumber.js'
-import { ConvertTokenData } from './ConvertCardMessage'
 import ArrowIcon from '../../../../../public/res/svg/transfer/common_outlined_arrow_down_v2.svg?react'
+import { IConvertTokenList } from '../../../hooks/aptos/useConvert'
 
 interface IStepTwoProps {
-  fromToken?: ConvertTokenData
-  toToken?: ConvertTokenData
+  fromToken?: IConvertTokenList
+  toToken?: IConvertTokenList
   fromAmount: string
   toAmount: string
   exchangeRate: string

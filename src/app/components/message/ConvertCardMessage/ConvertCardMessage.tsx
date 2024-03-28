@@ -12,6 +12,7 @@ import ResultPart from './ResultPart'
 import StepOne from './StepOne'
 import StepTwo from './StepTwo'
 import ConvertCardMessageLogo from '../../../../../public/res/svg/transfer/convert_card_message_logo.svg?react'
+import { IConvertTokenList, useConvert } from '../../../hooks/aptos/useConvert'
 
 interface IConvertCardMessageProps {
   mEventId: string
@@ -26,6 +27,7 @@ interface ConvertCardMessageContent {
   from_network?: string
   to_amount: string
   to_symbol: string
+  head_title: string
   to_network?: string
   order_type?: string
   original_answer?: { action: string; fromAmount: string; fromNetwork: string; fromToken: string; price: string; toAmount: string; toNetwork: string; toToken: string }
@@ -38,15 +40,6 @@ interface ConvertCardMessageContent {
     tx_hash: string
   }
 }
-export interface ConvertTokenData {
-  address: string
-  chainId: number
-  decimals: number
-  logoURI: string
-  name: string
-  symbol: string
-  balance: string
-}
 const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, mEventId, mEvent }) => {
   const { t } = useTranslation()
   const [messageBody] = useMessageContent<ConvertCardMessageContent>(mEventId, mEvent, timelineSet)
@@ -54,45 +47,14 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
   const debouncedInitDone = useDebounce(initDone, { wait: 500 })
   const swiperRef = useRef<SwiperClass>(null)
   const [swiperIndex, setSwiperIndex] = useState<number>(0)
-  const [fromToken, setFromToken] = useState<ConvertTokenData>()
-  const [toToken, setToToken] = useState<ConvertTokenData>()
+  const [fromToken, setFromToken] = useState<IConvertTokenList>()
+  const [toToken, setToToken] = useState<IConvertTokenList>()
   const [fromAmount, setFromAmount] = useState<string>('0')
   const toAmount = useMemo(() => new BigNumber(fromAmount || 0).times(1.2).toFormat(4), [fromAmount])
   const exchangeRate = useMemo(() => (fromAmount && toAmount && !new BigNumber(fromAmount).isZero() ? new BigNumber(toAmount).div(fromAmount).toFormat(4) : '0'), [fromAmount, toAmount])
   const route = useMemo(() => [fromToken?.symbol, toToken?.symbol], [fromToken?.symbol, toToken?.symbol])
   const fee = useMemo(() => new BigNumber(fromAmount || 0).times(0.01).toFormat(4), [fromAmount])
-  const fromTokenList = useMemo<Array<ConvertTokenData>>(
-    () => [
-      {
-        address: '0',
-        chainId: 1,
-        decimals: 8,
-        logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
-        name: 'APT',
-        symbol: 'APT',
-        balance: '100.99',
-      },
-      {
-        address: '1',
-        chainId: 1,
-        decimals: 8,
-        logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png',
-        name: 'usdt',
-        symbol: 'USDT',
-        balance: '200.99',
-      },
-      {
-        address: '2',
-        chainId: 1,
-        decimals: 8,
-        logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3.png',
-        name: 'usdc',
-        symbol: 'USDC',
-        balance: '300.99',
-      },
-    ],
-    [],
-  )
+  const { convertTokenList: fromTokenList } = useConvert()
   const toTokenList = useMemo(() => fromTokenList.filter((token) => token.address !== fromToken?.address), [fromToken?.address, fromTokenList])
   const handleSlideChange = (swiper: SwiperClass) => {
     setSwiperIndex(swiper.activeIndex)
@@ -139,16 +101,9 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
           lineHeight: '22px',
           marginBottom: '8px',
           whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
         }}
       >
-        <Box
-          sx={{
-            marginBottom: '8px',
-          }}
-        >
-          {t('DEFED DEX allows you to convert between different assets. The specific assets that can be converted depend on the available liquidity pools and trading pairs on the platform.')}
-        </Box>
+        <Box>{messageBody?.head_title}</Box>
       </Box>
       {debouncedInitDone ? (
         messageBody?.order_detail ? (

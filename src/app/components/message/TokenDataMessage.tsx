@@ -1,18 +1,14 @@
 import { observer } from 'mobx-react-lite'
-import React, { MouseEventHandler, useLayoutEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { EventTimelineSet, MatrixEvent } from 'matrix-js-sdk'
 import { Box } from '@mui/material'
-import { AxiosResponse } from 'axios'
+import BigNumber from 'bignumber.js'
 import { getMessageContent } from '../../hooks/useMessageContent'
 import UpIcon from '../../../../public/res/svg/token_data/up.svg?react'
 import DownIcon from '../../../../public/res/svg/token_data/down.svg?react'
 import { FormattedNumber } from '../common/FormattedNumber'
-import { useMobxStore } from '../../../stores/StoreProvider'
-import TokenDataImageMap from '../../../images/tokenDataImageMap'
-import DefedApi, { IResponseType } from '../../../api/defed-api'
-import { request } from '../../../api/request'
-import { DefedFinanceUrl } from '../../../constant'
 import { BotAnswerMessageContent } from '../../../types/defed/message'
+import TokenDataLogo from '../../../../public/res/svg/token_data/token_data_logo.svg?react'
 
 interface ITokenDataMessageProps {
   mEventId: string
@@ -96,43 +92,43 @@ const TokenDataMessage: React.FC<ITokenDataMessageProps> = ({ timelineSet, mEven
   }, [messageBody.answer])
 
   const data = useMemo(() => (Array.isArray(newsContent) ? newsContent[0] : null), [newsContent])
-  const {
-    appStore: { userAccount },
-    roomStore: { tokenDataWithUserAndFeeds, updateTokenDataWithUserAndFeedsByTokenIds, updateTokenDataWithUserAndFeedsByTokenId },
-  } = useMobxStore()
-  const tokenDataForUser = data?.token_id ? tokenDataWithUserAndFeeds.get(data.token_id) : undefined
-  const initTokenUserData = async () => {
-    if (data?.token_id) {
-      await updateTokenDataWithUserAndFeedsByTokenIds(data.token_id)
-    }
-  }
-  useLayoutEffect(() => {
-    initTokenUserData()
-  }, [data?.token_id])
-  const onStarClick: MouseEventHandler<HTMLDivElement> = async (event) => {
-    event.stopPropagation()
-    if (!userAccount?.proxyAddress || !tokenDataForUser || !data) {
-      return
-    }
-    if (tokenDataForUser.isCollect !== undefined) {
-      const bool = tokenDataForUser.isCollect === 'true'
-      const res: AxiosResponse<IResponseType<boolean>> = await request.post(DefedApi.collectToken, {
-        tokenId: data.token_id,
-        collect: !bool,
-      })
-      if (res?.data?.data) {
-        updateTokenDataWithUserAndFeedsByTokenId(data.token_id, {
-          ...tokenDataForUser,
-          isCollect: !bool ? 'true' : 'false',
-        })
+
+  const getComputedNumberWithUnit = (number: number | string | BigNumber, decimal: number) => {
+    const bigNumber = new BigNumber(number)
+    if (bigNumber.abs().isGreaterThan(10 ** 9)) {
+      return {
+        number: bigNumber.div(10 ** 9).toFormat(decimal),
+        unit: 'B',
       }
     }
-  }
-  const onCardClick: MouseEventHandler<HTMLDivElement> = () => {
-    if (!data) {
-      return
+    if (bigNumber.abs().isGreaterThan(10 ** 6)) {
+      return {
+        number: bigNumber.div(10 ** 6).toFormat(decimal),
+        unit: 'M',
+      }
     }
-    window.open(`${DefedFinanceUrl}/token/?tokenId=${data.token_id}&action=Info`)
+    if (bigNumber.abs().isGreaterThan(10 ** 3)) {
+      return {
+        number: bigNumber.div(10 ** 3).toFormat(decimal),
+        unit: 'K',
+      }
+    }
+    return {
+      number: bigNumber.toFormat(decimal),
+      unit: '',
+    }
+  }
+  const renderMoreData = (title: string, price: number) => {
+    const { number, unit } = getComputedNumberWithUnit(price, 2)
+    return (
+      <Box>
+        <Box>{title}</Box>
+        <Box>
+          ${number}
+          {unit}
+        </Box>
+      </Box>
+    )
   }
   return (
     <Box>
@@ -150,24 +146,29 @@ const TokenDataMessage: React.FC<ITokenDataMessageProps> = ({ timelineSet, mEven
       {data?.price?.[0] ? (
         <Box
           sx={{
-            height: 200,
-            width: '398px',
-            border: '1px solid #E6E8EC',
-            borderRadius: '20px',
-            p: 5,
-            cursor: 'pointer',
-            position: 'relative',
-            ':hover': {
-              borderColor: 'rgba(65, 40, 209, 0.50)',
-            },
+            width: '100%',
+            borderRadius: '0px 8px 8px 8px',
+            p: '7px 12px 12px',
             backgroundColor: '#FFF',
           }}
-          onClick={onCardClick}
         >
+          <Box
+            sx={{
+              width: '100%',
+            }}
+          >
+            <TokenDataLogo
+              style={{
+                width: '170px',
+                height: '21px',
+              }}
+            />
+          </Box>
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
+              height: '74px',
             }}
           >
             <Box
@@ -176,80 +177,119 @@ const TokenDataMessage: React.FC<ITokenDataMessageProps> = ({ timelineSet, mEven
               decoding="async"
               src={data.token_logo}
               sx={{
-                width: 42,
-                height: 42,
+                width: '40px',
+                height: '40px',
                 borderRadius: '50%',
+                flexShrink: 0,
               }}
             />
-            <Box sx={{ ml: 2 }}>
-              <Box sx={{ fontSize: '18px' }}>{data.token_name}</Box>
-              <Box sx={{ color: '#78828C' }}>{data.token_symbol}</Box>
+            <Box sx={{ ml: '12px', flexShrink: 0 }}>
+              <Box sx={{ fontSize: '16px', fontWeight: 500, lineHeight: '24px', color: '#23282D' }}>{data.token_name}</Box>
+              <Box sx={{ fontSize: '12px', fontWeight: 500, lineHeight: '16px', color: '#78828C' }}>{data.token_symbol}</Box>
             </Box>
 
+            <Box
+              sx={{
+                flex: 1,
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Box
+                component="img"
+                loading="lazy"
+                src={`https://s3.coinmarketcap.com/generated/sparklines/web/1d/2781/${data.id}.svg`}
+                sx={{
+                  width: '70px',
+                  height: '35px',
+                  filter:
+                    Number(data.price[0].price_change_percentage_24h) > 0 ? 'hue-rotate(85deg) saturate(80%) brightness(0.85)' : 'hue-rotate(300deg) saturate(210%) brightness(0.7) contrast(170%)',
+                }}
+              />
+            </Box>
             <Box
               sx={{
                 display: 'flex',
-                alignItems: 'center',
-                ml: 3,
+                flexDirection: 'column',
+                alignItems: 'flex-end',
               }}
             >
-              {Number(data.price[0].price_change_percentage_24h) > 0 ? <UpIcon /> : <DownIcon />}
+              <Box sx={{ fontSize: '16px', fontWeight: 500, lineHeight: '24px', color: '#23282D' }}>
+                $
+                {data.price[0] ? (
+                  <FormattedNumber
+                    value={data.price[0].price_latest}
+                    visibleDecimals={2}
+                    symbolsVariant="secondary24"
+                    sx={{ fontSize: '16px', fontWeight: 500, lineHeight: '24px', color: '#23282D' }}
+                  />
+                ) : null}
+              </Box>
               <Box
-                component="span"
                 sx={{
-                  ml: 0.5,
-                  fontSize: '14px',
-                  color: Number(data.price[0].price_change_percentage_24h) > 0 ? '#00D0B7' : '#FF4940',
+                  display: 'flex',
+                  alignItems: 'center',
                 }}
               >
-                {Number(data.price[0].price_change_percentage_24h) > 0 && '+'}
-                {(100 * Number(data.price[0].price_change_percentage_24h)).toFixed(2)}%
+                {Number(data.price[0].price_change_percentage_24h) > 0 ? <UpIcon /> : <DownIcon />}
+                <Box
+                  component="span"
+                  sx={{
+                    ml: 0.5,
+                    fontSize: '12px',
+                    color: Number(data.price[0].price_change_percentage_24h) > 0 ? '#00D0B7' : '#FF4940',
+                  }}
+                >
+                  {Number(data.price[0].price_change_percentage_24h) > 0 && '+'}
+                  {(100 * Number(data.price[0].price_change_percentage_24h)).toFixed(2)}%
+                </Box>
               </Box>
             </Box>
           </Box>
-
-          <Box sx={{ my: 2 }}>
-            <Box sx={{ color: '#BFC6CD', mr: 2, fontSize: '30px' }} component="span">
-              $
-            </Box>
-            {data.price[0] ? <FormattedNumber value={data.price[0].price_latest} visibleDecimals={2} sx={{ fontSize: '30px' }} symbolsVariant="secondary24" /> : null}
-          </Box>
-
           <Box
-            component="img"
-            loading="lazy"
-            src={`https://s3.coinmarketcap.com/generated/sparklines/web/1d/2781/${data.id}.svg`}
             sx={{
-              height: 45,
-              filter: Number(data.price[0].price_change_percentage_24h) > 0 ? 'hue-rotate(85deg) saturate(80%) brightness(0.85)' : 'hue-rotate(300deg) saturate(210%) brightness(0.7) contrast(170%)',
+              width: '100%',
+              height: '1px',
+              backgroundColor: '#F5F5F5',
+              marginBottom: '16px',
             }}
           />
-          {tokenDataForUser ? (
-            <Box
-              onClick={onStarClick}
-              sx={{
-                position: 'absolute',
-                right: 20,
-                top: 20,
-              }}
-              component="img"
-              src={tokenDataForUser.isCollect === 'true' ? TokenDataImageMap.star : TokenDataImageMap.noStar}
-            />
-          ) : null}
-
-          {tokenDataForUser ? (
-            <Box
-              sx={{
-                fontSize: '14px',
-                color: '#BFC6CD',
-                position: 'absolute',
-                bottom: 20,
-                right: 20,
-              }}
-            >
-              +{tokenDataForUser.feedsNumPast24h} feeds in 24h
-            </Box>
-          ) : null}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              width: '100%',
+              height: '40px',
+              '& > div:nth-child(odd)': {
+                flex: 1,
+                overflow: 'hidden',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '12px',
+                fontWeight: 500,
+                color: '#78828C',
+                '& > div:nth-child(2)': {
+                  color: '#23282D',
+                },
+              },
+              '& > div:nth-child(even)': {
+                width: '1px',
+                height: '100%',
+                backgroundColor: '#F5F5F5',
+              },
+            }}
+          >
+            {renderMoreData('Market cap', data.price[0].market_cap)}
+            <Box />
+            {renderMoreData('24H High', data.price[0].high_24h)}
+            <Box />
+            {renderMoreData('24H Low', data.price[0].low_24h)}
+          </Box>
         </Box>
       ) : null}
     </Box>

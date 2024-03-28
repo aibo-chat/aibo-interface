@@ -11,6 +11,7 @@ import { BotAnswerMessageContent } from '../../../types/defed/message'
 import HintIcon from '../../../../public/res/svg/common/common_outlined_hint_icon.svg?react'
 import BackgroundSVG from '../../../../public/res/svg/fear_greed_index/background.svg?react'
 import PointerSVG from '../../../../public/res/svg/fear_greed_index/pointer.svg?react'
+import FearGreedIndexLogo from '../../../../public/res/svg/fear_greed_index/fear_greed_index_logo.svg?react'
 
 interface IFearGreedIndexMessageProps {
   mEventId: string
@@ -69,13 +70,13 @@ const FearGreedIndexMessage: React.FC<IFearGreedIndexMessageProps> = ({ timeline
   return indexContent?.[0] ? (
     <Box
       sx={{
-        width: '398px',
-        padding: '12px 12px 24px',
-        border: '1px solid #F2F2F2',
-        borderRadius: '20px',
+        width: { xs: '100%', lg: '398px' },
+        padding: '7px 12px 12px',
+        borderRadius: '0px 8px 8px 8px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        backgroundColor: '#FFFFFF',
       }}
     >
       <Box
@@ -84,55 +85,17 @@ const FearGreedIndexMessage: React.FC<IFearGreedIndexMessageProps> = ({ timeline
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: '28px',
+          marginBottom: '19px',
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
+        <FearGreedIndexLogo
+          style={{
+            width: '255px',
+            height: '21px',
           }}
-        >
-          <Box
-            sx={{
-              marginRight: '8px',
-              fontSize: '18px',
-              fontWeight: 500,
-              lineHeight: '24px',
-              color: '#191919',
-            }}
-          >
-            {t('Fear & Greed Index')}
-          </Box>
-          <Tooltip
-            title={t(
-              'The Fear and Greed Index is a tool used to measure the sentiment of investors in the market. It provides a score ranging from 0 to 100, indicating the level of fear or greed present in the market. This index is commonly used in the cryptocurrency industry, particularly for Bitcoin. It takes into account various factors such as market data, social media data, and search data to assess the dominant mood in the market. The index helps investors gauge the overall sentiment and make informed decisions based on market emotions.',
-            )}
-            placement="top"
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <HintIcon />
-            </Box>
-          </Tooltip>
-        </Box>
-        <Box
-          sx={{
-            fontSize: '14px',
-            fontWeight: 400,
-            lineHeight: '14px',
-            color: '#78828C',
-          }}
-        >
-          {dayjs(Number(indexContent[0]?.now?.timestamp) * 1000).format('YYYY-MM-DD HH:mm')}
-        </Box>
+        />
       </Box>
-      <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+      <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', flexDirection: 'column', marginBottom: '15px' }}>
         <BackgroundSVG />
         <Box
           sx={{
@@ -177,6 +140,20 @@ const FearGreedIndexMessage: React.FC<IFearGreedIndexMessageProps> = ({ timeline
         >
           <PointerSVG />
         </Box>
+      </Box>
+      <Box
+        sx={{
+          width: '100%',
+          fontSize: '12px',
+          fontWeight: 500,
+          lineHeight: '14px',
+          color: '#78828C',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+        }}
+      >
+        {dayjs(Number(indexContent[0]?.now?.timestamp) * 1000).format('YYYY-MM-DD HH:mm')}
       </Box>
     </Box>
   ) : null

@@ -2,18 +2,18 @@ import { observer } from 'mobx-react-lite'
 import React, { Dispatch, SetStateAction, useState } from 'react'
 import { Box, ButtonBase, ClickAwayListener, InputBase, Tooltip } from '@mui/material'
 import { BigNumber } from 'bignumber.js'
-import { ConvertTokenData } from './ConvertCardMessage'
 import { NumberFormatCustom } from '../../TransferModal/components/TransferModalInput'
 import ArrowDownIcon from '../../../../../public/res/svg/common/common_outlined_arrow_down.svg?react'
 import ExchangeIcon from '../../../../../public/res/svg/common/common_outlined_exchange_icon_v2.svg?react'
+import { IConvertTokenList } from '../../../hooks/aptos/useConvert'
 
 interface IStepOneProps {
-  fromToken?: ConvertTokenData
-  fromTokenList: Array<ConvertTokenData>
-  setFromToken: Dispatch<SetStateAction<ConvertTokenData | undefined>>
-  toToken?: ConvertTokenData
-  toTokenList: Array<ConvertTokenData>
-  setToToken: Dispatch<SetStateAction<ConvertTokenData | undefined>>
+  fromToken?: IConvertTokenList
+  fromTokenList: Array<IConvertTokenList>
+  setFromToken: Dispatch<SetStateAction<IConvertTokenList | undefined>>
+  toToken?: IConvertTokenList
+  toTokenList: Array<IConvertTokenList>
+  setToToken: Dispatch<SetStateAction<IConvertTokenList | undefined>>
   fromAmount: string
   setFromAmount: Dispatch<SetStateAction<string>>
   toAmount: string
@@ -22,9 +22,9 @@ interface IStepOneProps {
 }
 
 interface IMySelectProps {
-  selectedToken?: ConvertTokenData
-  tokenList: Array<ConvertTokenData>
-  setSelectedToken: Dispatch<SetStateAction<ConvertTokenData | undefined>>
+  selectedToken?: IConvertTokenList
+  tokenList: Array<IConvertTokenList>
+  setSelectedToken: Dispatch<SetStateAction<IConvertTokenList | undefined>>
 }
 const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelectedToken }) => {
   const [tooltipOpen, setTooltipOpen] = useState<boolean>(false)
@@ -62,9 +62,11 @@ const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelec
         <ClickAwayListener onClickAway={() => setTooltipOpen(false)}>
           <Box
             sx={{
-              width: '110px',
+              width: '130px',
               maxHeight: '200px',
               padding: '4px 0',
+              overflowY: 'auto',
+              overflowX: 'hidden',
             }}
           >
             {tokenList?.map((token, index) => (
@@ -100,6 +102,7 @@ const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelec
                     lineHeight: '24px',
                     color: '#23282D',
                     fontFamily: 'var(--font-secondary)',
+                    whiteSpace: 'pre',
                   }}
                 >
                   {token.symbol}
@@ -112,7 +115,7 @@ const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelec
     >
       <ButtonBase
         sx={{
-          width: '110px',
+          width: '130px',
           height: '28px',
           borderRadius: '14px',
           backgroundColor: '#FFFFFF',

@@ -38,13 +38,15 @@ function RoomView({ room, eventId }) {
   const canMessage = myUserId ? canSendEvent(EventType.RoomMessage, getPowerLevel(myUserId)) : false
 
   const getBackgroundImageUrl = (targetThemeIndex) => {
-    let themeIndex
-    if (targetThemeIndex !== undefined) {
-      themeIndex = targetThemeIndex
-    } else {
-      const autoThemeIndex = settings.darkModeQueryList.matches ? 2 : 0
-      themeIndex = settings.useSystemTheme ? autoThemeIndex : settings.themeIndex
-    }
+    // let themeIndex
+    // if (targetThemeIndex !== undefined) {
+    //   themeIndex = targetThemeIndex
+    // } else {
+    //   const autoThemeIndex = settings.darkModeQueryList.matches ? 2 : 0
+    //   themeIndex = settings.useSystemTheme ? autoThemeIndex : settings.themeIndex
+    // }
+    // 目前只支持浅色模式
+    const themeIndex = 0
     return [2, 3].includes(themeIndex) ? SystemImageMap.waterMarkDark : SystemImageMap.waterMark
   }
   const [backgroundImageUrl, setBackgroundImageUrl] = useState(getBackgroundImageUrl())

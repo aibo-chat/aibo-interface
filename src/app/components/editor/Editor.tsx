@@ -83,7 +83,7 @@ export const CustomEditor = forwardRef<HTMLDivElement, CustomEditorProps>(
       <div className={css.Editor} ref={ref}>
         <Slate editor={editor} initialValue={initialValue} onChange={onChange}>
           {top}
-          <Box alignItems="Start">
+          <Box alignItems="Center">
             {before && (
               <Box className={css.EditorOptions} alignItems="Center" gap="100" shrink="No">
                 {before}

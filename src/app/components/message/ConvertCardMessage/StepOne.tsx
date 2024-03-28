@@ -413,10 +413,38 @@ const StepOne: React.FC<IStepOneProps> = ({ fromToken, fromAmount, setFromAmount
         >
           {fromToken && toToken ? (
             <>
-              <Box component="span">{new BigNumber(exchangeRate).isZero() ? 0 : 1}</Box>
-              <Box component="span">{fromToken.symbol}</Box>
-              <Box component="span">=</Box>
-              <Box component="span">{exchangeRate}</Box>
+              <Box
+                component="span"
+                sx={{
+                  marginRight: '2px',
+                }}
+              >
+                {new BigNumber(exchangeRate).isZero() ? 0 : 1}
+              </Box>
+              <Box
+                component="span"
+                sx={{
+                  marginRight: '2px',
+                }}
+              >
+                {fromToken.symbol}
+              </Box>
+              <Box
+                component="span"
+                sx={{
+                  marginRight: '2px',
+                }}
+              >
+                =
+              </Box>
+              <Box
+                component="span"
+                sx={{
+                  marginRight: '2px',
+                }}
+              >
+                {exchangeRate}
+              </Box>
               <Box component="span">{toToken.symbol}</Box>
             </>
           ) : null}

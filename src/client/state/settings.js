@@ -69,8 +69,10 @@ class Settings extends EventEmitter {
 
   applyTheme() {
     this._clearTheme()
-    const autoThemeIndex = this.darkModeQueryList.matches ? 2 : 0
-    const themeIndex = this.useSystemTheme ? autoThemeIndex : this.themeIndex
+    // const autoThemeIndex = this.darkModeQueryList.matches ? 2 : 0
+    // const themeIndex = this.useSystemTheme ? autoThemeIndex : this.themeIndex
+    // 目前只开放浅色模式
+    const themeIndex = 0
     if (this.themes[themeIndex] === undefined) return
     this.emit(cons.events.settings.THEME_INDEX_CHANGED, themeIndex)
     if (this.themes[themeIndex]) document.body.classList.add(this.themes[themeIndex])

@@ -7,6 +7,7 @@ import authSsoTwitterButton from '../../public/res/png/auth/auth_sso_twitter_but
 import authLogin from '../../public/res/png/auth/auth_login.png'
 import authRegistry from '../../public/res/png/auth/auth_registry.png'
 import authAiboLogo from '../../public/res/png/auth/auth_aibo_logo.png'
+import connectWalletBackground from '../../public/res/png/auth/connect_wallet_background.png'
 
 export default {
   welcomeText,
@@ -18,4 +19,5 @@ export default {
   authLogin,
   authRegistry,
   authAiboLogo,
+  connectWalletBackground,
 }

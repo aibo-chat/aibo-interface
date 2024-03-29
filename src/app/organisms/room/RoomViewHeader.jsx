@@ -1,25 +1,18 @@
 import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import './RoomViewHeader.scss'
-
 import { Box } from '@mui/material'
 import { twemojify } from '../../../util/twemojify'
 import { blurOnBubbling } from '../../atoms/button/script'
-
 import initMatrix from '../../../client/initMatrix'
 import cons from '../../../client/state/cons'
 import navigation from '../../../client/state/navigation'
-import { openReusableContextMenu } from '../../../client/action/navigation'
 import colorMXID from '../../../util/colorMXID'
-import { getEventCords } from '../../../util/common'
-import IconButton from '../../atoms/button/IconButton'
 import Header from '../../atoms/header/Header'
 import Avatar from '../../atoms/avatar/Avatar'
-import RoomOptions from '../../molecules/room-options/RoomOptions'
-import VerticalMenuIC from '../../../../public/res/ic/outlined/vertical-menu.svg'
-
 import { useForceUpdate } from '../../hooks/useForceUpdate'
 import CommonConditionDisplay from '../../components/common/CommonConditionDisplay'
+import WalletHeader from '../../components/aptos/WalletHeader'
 
 function RoomViewHeader({ roomId }) {
   const [, forceUpdate] = useForceUpdate()
@@ -56,10 +49,6 @@ function RoomViewHeader({ roomId }) {
     }
   }, [roomId])
 
-  const openRoomOptions = (e) => {
-    openReusableContextMenu('bottom', getEventCords(e, '.ic-btn'), (closeMenu) => <RoomOptions roomId={roomId} afterOptionSelect={closeMenu} type="right" />)
-  }
-
   return (
     <Header>
       <Box ref={roomHeaderBtnRef} className="room-header__btn" type="button" onMouseUp={(e) => blurOnBubbling(e, '.room-header__btn')}>
@@ -86,7 +75,6 @@ function RoomViewHeader({ roomId }) {
         >
           {twemojify(roomName)}
         </Box>
-        {/* <RawIcon src={ChevronBottomIC} /> */}
       </Box>
       {roomConditions ? (
         <CommonConditionDisplay
@@ -103,19 +91,7 @@ function RoomViewHeader({ roomId }) {
           }}
         />
       )}
-      {/* {mx.isRoomEncrypted(roomId) === false && <IconButton onClick={() => toggleRoomSettings(tabText.SEARCH)} tooltip="Search" src={SearchIC} />} */}
-      {/* {!isDM ? ( */}
-      {/*  <IconButton */}
-      {/*    className="room-header__drawer-btn" */}
-      {/*    onClick={() => { */}
-      {/*      setPeopleDrawer((t) => !t) */}
-      {/*    }} */}
-      {/*    tooltip="People" */}
-      {/*    src={UserIC} */}
-      {/*  /> */}
-      {/* ) : null} */}
-      {/* <IconButton className="room-header__members-btn" onClick={() => toggleRoomSettings(tabText.MEMBERS)} tooltip="Members" src={UserIC} /> */}
-      <IconButton onClick={openRoomOptions} tooltip="Options" src={VerticalMenuIC} />
+      <WalletHeader />
     </Header>
   )
 }

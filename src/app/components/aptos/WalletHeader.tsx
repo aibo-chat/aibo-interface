@@ -4,11 +4,13 @@ import { Box, ButtonBase, ClickAwayListener, Tooltip } from '@mui/material'
 import { useWallet } from '@aptos-labs/wallet-adapter-react'
 import { textCenterEllipsis } from '../message/CommonTransferMessage/components'
 import authImageMap from '../../../images/authImageMap'
-import snackbarUtils from '../../../util/SnackbarUtils'
+import { useConnectPetra } from '../../hooks/aptos/useConnectPetra'
 
 const WalletHeader: React.FC = () => {
-  const { connected, account, disconnect, connect, wallet } = useWallet()
+  const { connected, account, disconnect } = useWallet()
   const [tooltipOpen, setTooltipOpen] = useState(false)
+
+  const { connectPetraWallet } = useConnectPetra()
 
   return connected && account ? (
     <Tooltip
@@ -113,12 +115,7 @@ const WalletHeader: React.FC = () => {
         fontWeight: 500,
         lineHeight: '14px',
       }}
-      onClick={() => {
-        if (!wallet?.name) {
-          return snackbarUtils.error('Please connect wallet')
-        }
-        connect(wallet.name)
-      }}
+      onClick={connectPetraWallet}
     >
       Connect Wallet
     </ButtonBase>

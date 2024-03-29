@@ -35,7 +35,7 @@ export function useConvert() {
       ...item,
       balance: balanceData[item.address] || 0
     }))
-    //将有余额的数据排序到前面
+    //将有余额的数据按照symbol的字母顺序排序到前面
     return tokenListSortBySymbol.filter((item) => item.balance).concat(tokenListSortBySymbol.filter((item) => !item.balance))
   }, [userAsset])
 

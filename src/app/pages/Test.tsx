@@ -8,7 +8,7 @@ import { useConvert } from "../hooks/aptos/useConvert"
 export function TestPage() {
   const { disconnect, connected, account } = useWallet()
 
-  useConvert()
+  // useConvert()
 
   return (
     <div>

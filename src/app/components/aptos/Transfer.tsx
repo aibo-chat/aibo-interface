@@ -12,6 +12,7 @@ import { valueToBigNumber } from '../../utils/math-utils-v2'
 import { formatAmount } from '../../hooks/aptos/utils'
 import snackbarUtils from '../../../util/SnackbarUtils'
 import { CommonTransferMessageContent } from '../message/CommonTransferMessage/CommonTransferMessage'
+import { useConnectPetra } from '../../hooks/aptos/useConnectPetra'
 
 interface IAptosTransferProps {
   aiTokenSymbol?: string
@@ -21,7 +22,9 @@ interface IAptosTransferProps {
 }
 // aiSelectTokenSymbol 通过 AI 识别出的 aiSelectTokenSymbol
 export const AptosTransfer: React.FC<IAptosTransferProps> = ({ aiTokenSymbol, aiInputAmount, aiToAddress, updateMessage }) => {
-  const { account, network, connect, connected, wallet } = useWallet()
+  const { account, network, connected } = useWallet()
+
+  const { connectPetraWallet } = useConnectPetra()
 
   const { getCoinBalance, transfer, userAsset } = useTransaction()
 
@@ -80,11 +83,10 @@ export const AptosTransfer: React.FC<IAptosTransferProps> = ({ aiTokenSymbol, ai
   }
 
   const handleNext = () => {
-    if (!wallet?.name) {
-      return snackbarUtils.error('Please connect wallet')
-    }
+    //检查钱包是否连接
     if (!connected) {
-      return connect(wallet.name)
+      connectPetraWallet()
+      return
     }
     if (!sendAmount || !toAddress || !selectCoinData) return
     // 校验余额是否足够

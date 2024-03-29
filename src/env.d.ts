@@ -23,6 +23,7 @@ interface ImportMeta {
 
 interface Window {
   changeDeveloperMode: (newValue: boolean) => void
+  petra?: Object
 }
 // declare module '*.svg' {
 //   import * as React from 'react'

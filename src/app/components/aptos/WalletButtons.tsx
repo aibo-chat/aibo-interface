@@ -54,7 +54,7 @@ const WalletView = (wallet: Wallet) => {
         disabled={true}
         key={wallet.name}
       >
-        <>{wallet.name} - Desktop Only</>
+        <>{wallet.name}</>
       </button>
     );
   } else {

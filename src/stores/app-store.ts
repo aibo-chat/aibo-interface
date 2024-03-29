@@ -197,17 +197,14 @@ export default class AppStore {
   }
 
   *createSecurityKey(mx: MatrixClient) {
-    console.log('createSecurityKey-1')
     const recoveryKey: IRecoveryKey = yield mx.createRecoveryKeyFromPassphrase()
     clearSecretStorageKeys()
-    console.log('createSecurityKey-2')
 
     yield mx.bootstrapSecretStorage({
       createSecretStorageKey: async () => recoveryKey,
       setupNewKeyBackup: true,
       setupNewSecretStorage: true,
     })
-    console.log('createSecurityKey-3')
 
     const authUploadDeviceSigningKeys = async (makeRequest: (authData: any) => Promise<{}>) => {
       try {
@@ -226,13 +223,11 @@ export default class AppStore {
         this.setConnectError('AuthUploadDeviceSigningKeys Error')
       }
     }
-    console.log('createSecurityKey-4')
 
     yield mx.bootstrapCrossSigning({
       authUploadDeviceSigningKeys,
       setupNewCrossSigning: true,
     })
-    console.log('createSecurityKey-5')
 
     yield this.encryptSecurityKeyWithPublicKeyAndSave(recoveryKey)
   }
@@ -269,7 +264,7 @@ export default class AppStore {
   }
 
   *initUserData() {
-    // return this.changeIsAppLoading(false)
+    return this.changeIsAppLoading(false)
     try {
       yield this.dealWithSecurityKey()
     } catch (e) {

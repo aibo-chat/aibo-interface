@@ -71,6 +71,7 @@ const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelec
           >
             {tokenList?.map((token, index) => (
               <ButtonBase
+                key={token.address}
                 sx={{
                   width: '100%',
                   height: '28px',

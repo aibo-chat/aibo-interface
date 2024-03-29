@@ -117,16 +117,25 @@ class InitMatrix extends EventEmitter {
     if (!cryptoApiRef) return
     const keys = await cryptoApiRef.exportRoomKeys()
     if (keys?.length) {
-      console.log('RoomKeys发生变化', this.currentRoomKeyLength, '=>', keys.length)
-      const result = await request.post(MatrixApi.saveMatrixRoomKey, {
-        time: Date.now(),
-        sessions: keys,
-      })
-      if (result?.data?.code === 200 && Array.isArray(result.data.data)) {
-        console.log('获取增量roomKeys', result.data.data)
-        await initMatrix.matrixClient.importRoomKeys(result.data.data)
+      try {
+        console.log('RoomKeys发生变化', this.currentRoomKeyLength, '=>', keys.length)
+        const finalSessions = keys.map((key) => ({
+          room_id: key.room_id,
+          session_id: key.session_id,
+          session_key: JSON.stringify(key),
+        }))
+        const result = await request.post(MatrixApi.saveMatrixRoomKey, {
+          time: Date.now(),
+          sessions: finalSessions,
+        })
+        if (Array.isArray(result?.data?.data)) {
+          console.log('获取增量roomKeys', result.data.data)
+          await initMatrix.matrixClient.importRoomKeys(result.data.data)
+        }
+        this.currentRoomKeyLength = keys.length
+      } catch (e) {
+        console.error('checkKeyUpdates error', e)
       }
-      this.currentRoomKeyLength = keys.length
     }
   }, 1000)
 
@@ -187,17 +196,23 @@ class InitMatrix extends EventEmitter {
     if (!this.matrixClient) return
     const cryptoApiRef = this.matrixClient.getCrypto()
     if (!cryptoApiRef) return
-    const result = await promise
-    if (result?.data?.code === 200 && Array.isArray(result.data.data)) {
-      result.data.data.forEach((roomKey) => {
-        if (!roomKey?.session_id) return
-        if (!this.sessionIdCache) {
-          this.sessionIdCache = {}
-        }
-        this.sessionIdCache[roomKey.session_id] = true
-      })
-      await initMatrix.matrixClient.importRoomKeys(result.data.data)
-      this.currentRoomKeyLength = result.data.data.length
+    try {
+      const result = await promise
+      if (Array.isArray(result?.data?.data)) {
+        const finalRoomKey = result.data.data.map((item) => {
+          if (!this.sessionIdCache) {
+            this.sessionIdCache = {}
+          }
+          if (item?.session_id) {
+            this.sessionIdCache[item.session_id] = true
+          }
+          return JSON.parse(item.session_key || '{}')
+        })
+        await initMatrix.matrixClient.importRoomKeys(finalRoomKey)
+        this.currentRoomKeyLength = finalRoomKey?.length
+      }
+    } catch (e) {
+      console.error('setupSessionIdCache error', e)
     }
     this.setupSessionIdCacheDone = true
     console.log('setupSessionIdCache done', Date.now())

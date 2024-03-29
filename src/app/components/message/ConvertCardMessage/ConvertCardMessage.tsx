@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react-lite'
 import React, { useMemo, useRef, useState } from 'react'
 import { EventTimelineSet, MatrixEvent } from 'matrix-js-sdk'
-import { useTranslation } from 'react-i18next'
 import { Box, Button, Skeleton } from '@mui/material'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Swiper as SwiperClass } from 'swiper/types'

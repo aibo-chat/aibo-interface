@@ -3,10 +3,10 @@ import React, { useState } from 'react'
 import { Box, ButtonBase, ClickAwayListener, Tooltip } from '@mui/material'
 import { useWallet } from '@aptos-labs/wallet-adapter-react'
 import { textCenterEllipsis } from '../message/CommonTransferMessage/components'
-import authImageMap from '../../../images/authImageMap'
 import { useConnectPetra } from '../../hooks/aptos/useConnectPetra'
 import PetraPng from '../../../../public/aptos/petra.png'
 import LinkLogo from '../../../../public/res/svg/auth/link_logo.svg?react'
+import ConnectLogo from '../../../../public/res/svg/auth/connnet_logo.svg?react'
 
 const WalletHeader: React.FC = () => {
   const { connected, account, disconnect } = useWallet()
@@ -120,18 +120,19 @@ const WalletHeader: React.FC = () => {
   ) : (
     <ButtonBase
       sx={{
-        backgroundImage: `url(${authImageMap.connectWalletBackground})`,
-        width: '116px',
+        width: '93px',
         height: '30px',
-        backgroundSize: 'covert',
+        backgroundColor: '#25B1FF1A',
         color: '#25B1FF',
         fontSize: '14px',
         fontWeight: 500,
         lineHeight: '14px',
+        borderRadius: '4px',
       }}
       onClick={connectPetraWallet}
     >
-      Connect Wallet
+      <ConnectLogo style={{ width: '14px', height: '14px', marginRight: '6px' }} />
+      Connect
     </ButtonBase>
   )
 }

@@ -264,7 +264,7 @@ export default class AppStore {
   }
 
   *initUserData() {
-    return this.changeIsAppLoading(false)
+    // return this.changeIsAppLoading(false)
     try {
       yield this.dealWithSecurityKey()
     } catch (e) {

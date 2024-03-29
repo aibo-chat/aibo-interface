@@ -3,7 +3,7 @@ import { AxiosResponse } from 'axios'
 import { Store } from './index'
 import { OperationData } from '../app/components/message/FeedsNewsMessage'
 import DefedApi, { IResponseType } from '../api/defed-api'
-import { request } from '../api/request'
+import { commonRequest, request } from '../api/request'
 import { FeedsSingleNewsNecessaryData } from '../app/components/message/FeedsSingleNews'
 
 export interface IAskFeedsNewsDraft {
@@ -179,7 +179,7 @@ export default class RoomStore {
     }
     this.tokenInfoWithTokenNameRequestTimer = setTimeout(async () => {
       if (this.requestTokenNameList.length) {
-        const result: AxiosResponse<IResponseType<Array<TokenInfo>>> = await request.post(DefedApi.postTokenInfoWithTokenName, {
+        const result: AxiosResponse<IResponseType<Array<TokenInfo>>> = await commonRequest.post(`https://v2.defed.finance/${DefedApi.postTokenInfoWithTokenName}`, {
           tokenIds: this.requestTokenNameList,
         })
         if (result?.data?.data?.length) {

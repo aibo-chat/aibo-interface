@@ -1,10 +1,12 @@
 import { observer } from 'mobx-react-lite'
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { EventTimelineSet, MatrixEvent } from 'matrix-js-sdk'
 import { useTranslation } from 'react-i18next'
-import { Box, Tooltip } from '@mui/material'
+import { Box, ButtonBase, Tooltip } from '@mui/material'
 import BigNumber from 'bignumber.js'
 import dayjs from 'dayjs'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import type { Swiper as SwiperClass } from 'swiper/types'
 import TriangleIcon from '../../../../public/res/svg/feeds_news/common_fullfilled_triangle_icon.svg?react'
 import { getMessageContent } from '../../hooks/useMessageContent'
 import { BotAnswerMessageContent } from '../../../types/defed/message'
@@ -60,6 +62,8 @@ interface SingleETFContentTypeDetail {
 const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId }) => {
   const { t } = useTranslation()
   const messageBody = getMessageContent<BotAnswerMessageContent>(timelineSet, mEventId, mEvent)
+  const swiperRef = useRef<SwiperClass>(null)
+  const [swiperIndex, setSwiperIndex] = useState<number>(0)
   const etfContent = useMemo<Array<SingleETFContentTypeTotal | SingleETFContentTypeDetail>>(() => {
     if (messageBody?.answer) {
       try {
@@ -96,6 +100,24 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
       return dayjs(targetTotalETFData.data_date_timestamp * 1000).format('YYYY-MM-DD')
     }
   }, [targetTotalETFData])
+
+  const goNext = () => {
+    if (!swiperRef.current) return
+    swiperRef.current.slideNext()
+  }
+
+  const goPrev = () => {
+    if (!swiperRef.current) return
+    swiperRef.current.slidePrev()
+  }
+
+  const goToSlide = (index: number) => {
+    if (!swiperRef.current) return
+    swiperRef.current.slideTo(index)
+  }
+  const handleSlideChange = (swiper: SwiperClass) => {
+    setSwiperIndex(swiper.activeIndex)
+  }
   const getComputedNumberWithUnit = (number: number | string | BigNumber, decimal: number) => {
     const bigNumber = new BigNumber(number)
     if (bigNumber.abs().isGreaterThan(10 ** 9)) {
@@ -169,8 +191,8 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
           fontSize: '16px',
           fontWeight: 500,
           lineHeight: '20px',
-          color: isZero ? '#191919' : bigNumber.isGreaterThan(0) ? '#00D0B7' : '#FF4940',
-          fill: isZero ? '#191919' : bigNumber.isGreaterThan(0) ? '#00D0B7' : '#FF4940',
+          color: isZero ? '#191919' : bigNumber.isGreaterThan(0) ? '#16C784' : '#EA3943',
+          fill: isZero ? '#191919' : bigNumber.isGreaterThan(0) ? '#16C784' : '#EA3943',
           marginLeft: '8px',
           display: 'flex',
           alignItems: 'center',
@@ -377,101 +399,167 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
           </Box>
         </Box>
       ) : targetDetailETFData?.length ? (
-        targetDetailETFData.map((targetDetailETFSingleData, index) => (
-          <Box
-            sx={{
-              borderRadius: '20px',
-              padding: '52px 24px 0',
+        <Box
+          sx={{
+            borderRadius: '20px',
+            padding: '52px 24px 0',
+            display: 'flex',
+            alignItems: 'center',
+            flexDirection: 'column',
+            width: '243px',
+            height: '238px',
+            border: '1px solid #F0F0F7',
+            position: 'relative',
+            backgroundImage: `url(${etfMessageImageMap.etfMessageTotalBackground})`,
+            backgroundSize: 'cover',
+            '& .itemContainer': {
+              width: '100%',
               display: 'flex',
               alignItems: 'center',
-              flexDirection: 'column',
-              width: '245px',
-              height: '220px',
-              border: '1px solid #F0F0F7',
-              position: 'relative',
-              backgroundImage: `url(${etfMessageImageMap.etfMessageTotalBackground})`,
-              backgroundSize: 'cover',
-              marginBottom: targetDetailETFData.length - 1 === index ? '0' : '8px',
-              '& .itemContainer': {
+              justifyContent: 'space-between',
+              marginBottom: { xs: '14px', lg: '16px' },
+            },
+            '& .itemTitle': {
+              fontSize: '14px',
+              fontWeight: 500,
+              lineHeight: '18px',
+              color: '#78828C',
+            },
+            '& .itemContent': {
+              fontSize: '16px',
+              fontWeight: 500,
+              lineHeight: '20px',
+              color: '#23282D',
+            },
+          }}
+        >
+          <Swiper
+            pagination={false}
+            direction="horizontal"
+            slidesPerView={1}
+            style={{ overflow: 'hidden', width: '100%' }}
+            simulateTouch
+            allowTouchMove
+            initialSlide={0}
+            onSwiper={(swiper: SwiperClass) => {
+              swiperRef.current = swiper
+            }}
+            onSlideChange={handleSlideChange}
+          >
+            {targetDetailETFData.map((targetDetailETFSingleData, index) => (
+              <SwiperSlide key={`${targetDetailETFSingleData.ticker_symbol}-${index}`}>
+                <Box>
+                  <Box className="itemContainer">
+                    <Box className="itemTitle">{t('Ticker')}</Box>
+                    <Box className="itemContent">{targetDetailETFSingleData.ticker_symbol}</Box>
+                  </Box>
+                  <Box className="itemContainer">
+                    <Box className="itemTitle">{t('1DInflow')}</Box>
+                    {renderNetInflowPart(targetDetailETFSingleData.ticker_1d_netInflow)}
+                  </Box>
+                  <Box className="itemContainer">
+                    <Box className="itemTitle">{t('Prem/Dsc')}</Box>
+                    {renderPremDscPart(targetDetailETFSingleData.ticker_prem_dsc)}
+                  </Box>
+                  <Box className="itemContainer" sx={{ marginBottom: '20px' }}>
+                    <Box className="itemTitle">{t('MktPrice')}</Box>
+                    <Box className="itemContent">
+                      <Box component="span">$</Box>
+                      <Box component="span">{targetDetailETFSingleData.mkt_price}</Box>
+                    </Box>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'flex-end',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        lineHeight: '16px',
+                        color: '#BFC6CD',
+                        marginRight: '4px',
+                      }}
+                    >
+                      {dayjs(targetDetailETFSingleData?.data_date_timestamp).format('YYYY-MM-DD')}
+                    </Box>
+                    <Tooltip title={t('Only data disclosed and updated by the ETF issuer as of the update time are included.')}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <HintIcon
+                          style={{
+                            width: '16px',
+                            height: '16px',
+                          }}
+                        />
+                      </Box>
+                    </Tooltip>
+                  </Box>
+                </Box>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+          {targetDetailETFData?.length && targetDetailETFData.length > 1 ? (
+            <Box
+              sx={{
+                marginTop: 'auto',
                 width: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '16px',
-              },
-              '& .itemTitle': {
-                fontSize: '14px',
-                fontWeight: 500,
-                lineHeight: '18px',
-                color: '#808080',
-              },
-              '& .itemContent': {
-                fontSize: '16px',
+                justifyContent: 'center',
+                gap: '8px',
+                fontFeatureSettings: "'clig' off, 'liga' off",
+                fontFamily: 'var(--font-secondary)',
+                fontSize: '12px',
+                fontStyle: 'normal',
                 fontWeight: 500,
                 lineHeight: '12px',
-                color: '#191919',
-              },
-            }}
-          >
-            <Box className="itemContainer">
-              <Box className="itemTitle">{t('Ticker')}</Box>
-              <Box className="itemContent">{targetDetailETFSingleData.ticker_symbol}</Box>
-            </Box>
-            <Box className="itemContainer">
-              <Box className="itemTitle">{t('1DInflow')}</Box>
-              {renderNetInflowPart(targetDetailETFSingleData.ticker_1d_netInflow)}
-            </Box>
-            <Box className="itemContainer">
-              <Box className="itemTitle">{t('Prem/Dsc')}</Box>
-              {renderPremDscPart(targetDetailETFSingleData.ticker_prem_dsc)}
-            </Box>
-            <Box className="itemContainer">
-              <Box className="itemTitle">{t('MktPrice')}</Box>
-              <Box className="itemContent">
-                <Box component="span">$</Box>
-                <Box component="span">{targetDetailETFSingleData.mkt_price}</Box>
-              </Box>
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                position: 'absolute',
-                bottom: '10px',
-                right: '14px',
+                padding: '0 0 8px',
               }}
             >
-              <Box
-                sx={{
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  lineHeight: '16px',
-                  color: '#BFC6CD',
-                  marginRight: '4px',
-                }}
-              >
-                {dayjs(targetDetailETFSingleData?.data_date_timestamp).format('YYYY-MM-DD')}
-              </Box>
-              <Tooltip title={t('Only data disclosed and updated by the ETF issuer as of the update time are included.')}>
-                <Box
+              <ButtonBase onClick={goPrev}>
+                <TriangleIcon
+                  style={{
+                    width: '6px',
+                    height: '8px',
+                    fill: '#CCCCCC',
+                  }}
+                />
+              </ButtonBase>
+              {targetDetailETFData.map((item, index) => (
+                <ButtonBase
+                  key={index}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    color: swiperIndex === index ? '#838383' : '#CCCCCC',
+                  }}
+                  onClick={() => {
+                    goToSlide(index)
                   }}
                 >
-                  <HintIcon
-                    style={{
-                      width: '16px',
-                      height: '16px',
-                    }}
-                  />
-                </Box>
-              </Tooltip>
+                  {index + 1}
+                </ButtonBase>
+              ))}
+              <ButtonBase onClick={goNext}>
+                <TriangleIcon
+                  style={{
+                    width: '6px',
+                    height: '8px',
+                    fill: '#CCCCCC',
+                    transform: 'rotate(180deg)',
+                  }}
+                />
+              </ButtonBase>
             </Box>
-          </Box>
-        ))
+          ) : null}
+        </Box>
       ) : (
         <Box
           sx={{

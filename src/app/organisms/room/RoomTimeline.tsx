@@ -1238,31 +1238,32 @@ const RoomTimeline = (props: RoomTimelineProps) => {
 
       const timeJSX = <Time ts={mEvent.getTs()} compact={messageLayout === 1} />
 
-      return (
-        <Event
-          key={mEvent.getId()}
-          data-message-item={item}
-          data-message-id={mEventId}
-          room={room}
-          mEvent={mEvent}
-          highlight={highlighted}
-          messageSpacing={messageSpacing}
-          canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
-        >
-          <EventContent
-            messageLayout={messageLayout}
-            time={timeJSX}
-            iconSrc={parsed.icon}
-            content={
-              <Box grow="Yes" direction="Column">
-                <Text size="T300" priority="300">
-                  {parsed.body}
-                </Text>
-              </Box>
-            }
-          />
-        </Event>
-      )
+      return null
+      // return (
+      //   <Event
+      //     key={mEvent.getId()}
+      //     data-message-item={item}
+      //     data-message-id={mEventId}
+      //     room={room}
+      //     mEvent={mEvent}
+      //     highlight={highlighted}
+      //     messageSpacing={messageSpacing}
+      //     canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
+      //   >
+      //     <EventContent
+      //       messageLayout={messageLayout}
+      //       time={timeJSX}
+      //       iconSrc={parsed.icon}
+      //       content={
+      //         <Box grow="Yes" direction="Column">
+      //           <Text size="T300" priority="300">
+      //             {parsed.body}
+      //           </Text>
+      //         </Box>
+      //       }
+      //     />
+      //   </Event>
+      // )
     },
     renderRoomName: (mEventId, mEvent, item) => {
       const highlighted = focusItem.current?.index === item && focusItem.current.highlight
@@ -1544,15 +1545,6 @@ const RoomTimeline = (props: RoomTimelineProps) => {
         }}
       >
         <Box direction="Column" justifyContent="End" style={{ minHeight: '100%', padding: `${config.space.S600} 0` }}>
-          {!canPaginateBack && rangeAtStart && getItems().length > 0 && (
-            <div
-              style={{
-                padding: '0 16px',
-              }}
-            >
-              <RoomIntro room={room} />
-            </div>
-          )}
           {(canPaginateBack || !rangeAtStart) &&
             (messageLayout === 1 ? (
               <>

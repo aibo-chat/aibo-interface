@@ -35,7 +35,7 @@ export interface SingleDigestContent {
     $oid: string
   }
 }
-const DefaultPostUrl = 'https://defed.mypinata.cloud/ipfs/QmX6gzsbkVJ1jaFrCCFf2uNdnpqRD1TvL4SNdBuKUkHUK2'
+const DefaultPostUrl = 'https://defed.mypinata.cloud/ipfs/Qma6rRdcpthc98rt7gifibCKpC2vZHhuXJFmV4BvmkjBUh'
 
 export const generateDailyDigestTitle = (tokenName: string, summaryDate: string) => `Daily digest of ${tokenName} on ${dayjs(summaryDate).format('MMMM Do')}`
 const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, mEvent, mEventId }) => {
@@ -148,7 +148,7 @@ const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, m
           src={DefaultPostUrl}
           sx={{
             width: '100%',
-            height: '206px',
+            height: { xs: '152px', lg: '206px' },
             flexShrink: 0,
             borderRadius: '6px',
           }}
@@ -158,7 +158,7 @@ const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, m
             position: 'absolute',
             bottom: '17px',
             left: '14px',
-            color: '#FFF',
+            color: '#000000',
             fontSize: '12px',
             fontWeight: 500,
             lineHeight: '12px',
@@ -169,8 +169,8 @@ const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, m
           {currentTokenInfo ? (
             <Box
               sx={{
-                width: '20px',
-                height: '20px',
+                width: { xs: '16px', lg: '20px' },
+                height: { xs: '16px', lg: '20px' },
                 marginRight: '4px',
                 borderRadius: '10px',
               }}
@@ -186,6 +186,13 @@ const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, m
               {originData?.symbol?.toUpperCase()}
             </Box>
           )}
+          <Box
+            sx={{
+              marginRight: '4px',
+            }}
+          >
+            x
+          </Box>
           <Box>{dayjs(originData?.summary_date).format('YYYY/MM/DD')}</Box>
         </Box>
       </Box>

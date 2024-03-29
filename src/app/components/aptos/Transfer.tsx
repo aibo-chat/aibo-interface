@@ -135,7 +135,7 @@ export const AptosTransfer: React.FC<IAptosTransferProps> = ({ aiTokenSymbol, ai
             fromAddress: account?.address as string,
             coin: selectCoinData.metadata.symbol,
             sendAmount,
-            txHash,
+            txHash: result.hash,
             networkName: network?.name as string,
           },
         })

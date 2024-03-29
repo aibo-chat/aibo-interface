@@ -196,6 +196,14 @@ class InitMatrix extends EventEmitter {
     if (!this.matrixClient) return
     const cryptoApiRef = this.matrixClient.getCrypto()
     if (!cryptoApiRef) return
+    // 没有promise的场景是新用户第一次进入，此时逻辑层不传入promise
+    if (!promise) {
+      console.log('新用户直接初始化')
+      this.sessionIdCache = {}
+      this.setupSessionIdCacheDone = true
+      return
+    }
+    console.log('老用户使用网络里的RoomKeyList直接初始化')
     try {
       const result = await promise
       if (Array.isArray(result?.data?.data)) {

@@ -170,14 +170,14 @@ export default class AppStore {
 
   *decryptSecurityKeyAndLoad(decryptedSecurityKey: string, listRoomKeyPromise: Promise<AxiosResponse<IResponseType<IGetMatrixRoomKeyResponse>>>) {
     if (!initMatrix.matrixClient) {
-      return
+      return this.setConnectError('initMatrix.matrixClient不存在')
     }
     const mx = initMatrix.matrixClient
     const sSKeyId = getDefaultSSKey()
     const sSKeyInfo = getSSKeyInfo(sSKeyId)
     const privateKey = mx.keyBackupKeyFromRecoveryKey(decryptedSecurityKey)
     if (!sSKeyInfo) {
-      return
+      return this.setConnectError('sSKeyInfo不存在')
     }
     const isCorrect: boolean = yield mx.checkSecretStorageKey(privateKey, sSKeyInfo as SecretStorageKeyDescription)
     if (!isCorrect) {
@@ -229,6 +229,7 @@ export default class AppStore {
       setupNewCrossSigning: true,
     })
 
+    yield initMatrix.setupSessionIdCache()
     yield this.encryptSecurityKeyWithPublicKeyAndSave(recoveryKey)
   }
 

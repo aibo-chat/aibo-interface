@@ -92,13 +92,12 @@ const WalletHeader: React.FC = () => {
         </Box>
         <Box
           component="img"
-          src=""
+          src="/public/aptos/petra.png"
           sx={{
             width: '16px',
             height: '16px',
             borderRadius: '50%',
             flexShrink: 0,
-            backgroundColor: 'red',
           }}
         />
       </ButtonBase>

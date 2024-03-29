@@ -41,7 +41,7 @@ interface ConvertCardMessageContent {
   }
 }
 const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, mEventId, mEvent }) => {
-  const { t } = useTranslation()
+
   const [messageBody] = useMessageContent<ConvertCardMessageContent>(mEventId, mEvent, timelineSet)
   const [initDone, setInitDone] = useState<boolean>(false)
   const debouncedInitDone = useDebounce(initDone, { wait: 500 })

@@ -5,6 +5,7 @@ import { useWallet } from '@aptos-labs/wallet-adapter-react'
 import { textCenterEllipsis } from '../message/CommonTransferMessage/components'
 import authImageMap from '../../../images/authImageMap'
 import { useConnectPetra } from '../../hooks/aptos/useConnectPetra'
+import PetraPng from '../../../../public/aptos/petra.png'
 import LinkLogo from '../../../../public/res/svg/auth/link_logo.svg?react'
 
 const WalletHeader: React.FC = () => {
@@ -106,13 +107,12 @@ const WalletHeader: React.FC = () => {
         </Box>
         <Box
           component="img"
-          src=""
+          src={PetraPng}
           sx={{
             width: '16px',
             height: '16px',
             borderRadius: '50%',
             flexShrink: 0,
-            backgroundColor: 'red',
           }}
         />
       </ButtonBase>

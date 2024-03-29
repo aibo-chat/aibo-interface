@@ -74,7 +74,7 @@ const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelec
                 sx={{
                   width: '100%',
                   height: '28px',
-                  marginBottom: index === tokenList.length - 1 ? 0 : '2px',
+                  marginBottom: index === tokenList.length - 1 ? 0 : '4px',
                 }}
                 onClick={() => {
                   setSelectedToken(token)
@@ -97,7 +97,7 @@ const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelec
                     flex: 1,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    fontSize: '20px',
+                    fontSize: '16px',
                     fontWeight: 500,
                     lineHeight: '24px',
                     color: '#23282D',

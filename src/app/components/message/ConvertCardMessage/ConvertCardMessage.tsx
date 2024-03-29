@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { EventTimelineSet, MatrixEvent } from 'matrix-js-sdk'
 import { Box, Button, Skeleton } from '@mui/material'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -49,15 +49,34 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
   const [fromToken, setFromToken] = useState<IConvertTokenList>()
   const [toToken, setToToken] = useState<IConvertTokenList>()
   const [fromAmount, setFromAmount] = useState<string>('0')
-  const toAmount = useMemo(() => new BigNumber(fromAmount || 0).times(1.2).toFormat(4), [fromAmount])
+
+  // const toAmount = useMemo(() => new BigNumber(fromAmount || 0).times(1.2).toFormat(4), [fromAmount])
+
+  const [toAmount, setToAmount] = useState('')
+
+  useEffect(() => {
+    if (!fromAmount) {
+      setToAmount('')
+      return
+    }
+    const data = new BigNumber(fromAmount || 0).times(1.5).toFormat(4)
+    setToAmount(data)
+  }, [fromAmount])
+
   const exchangeRate = useMemo(() => (fromAmount && toAmount && !new BigNumber(fromAmount).isZero() ? new BigNumber(toAmount).div(fromAmount).toFormat(4) : '0'), [fromAmount, toAmount])
+
   const route = useMemo(() => [fromToken?.symbol, toToken?.symbol], [fromToken?.symbol, toToken?.symbol])
+
   const fee = useMemo(() => new BigNumber(fromAmount || 0).times(0.01).toFormat(4), [fromAmount])
+
   const { convertTokenList: fromTokenList } = useConvert()
+
   const toTokenList = useMemo(() => fromTokenList.filter((token) => token.address !== fromToken?.address), [fromToken?.address, fromTokenList])
+
   const handleSlideChange = (swiper: SwiperClass) => {
     setSwiperIndex(swiper.activeIndex)
   }
+
   const initData = () => {
     if (messageBody) {
       let fromToken = fromTokenList[0]
@@ -76,21 +95,37 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
         }
       }
       setToToken(toToken)
-      setFromAmount(messageBody.from_amount || '0')
+      setFromAmount(messageBody.from_amount || '')
     }
     setInitDone(true)
   }
+
   useIsomorphicLayoutEffect(() => {
     initData()
-  }, [messageBody?.from_symbol])
+  }, [messageBody?.from_symbol, fromTokenList])
+
   const goNext = () => {
     if (!swiperRef.current) return
+    if (!fromToken || !toToken || !Number(fromAmount) || !Number(toAmount)) return
+
+    console.log('params', {
+      fromToken,
+      toToken,
+      fromAmount,
+      toAmount
+    });
     swiperRef.current.slideNext()
   }
+
+  const confirmCurrentTx = () => {
+    console.log('对交易信息进行签名')
+  }
+
   const goPrev = () => {
     if (!swiperRef.current) return
     swiperRef.current.slidePrev()
   }
+
   return (
     <Box>
       <Box
@@ -139,6 +174,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
               allowTouchMove={false}
               initialSlide={0}
               onSwiper={(swiper: SwiperClass) => {
+                //@ts-ignore
                 swiperRef.current = swiper
               }}
               onSlideChange={handleSlideChange}
@@ -162,12 +198,20 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
                   toTokenList={toTokenList}
                 />
               </SwiperSlide>
+
               <SwiperSlide
                 style={{
                   height: swiperIndex === 1 ? 'auto' : '0px',
                 }}
               >
-                <StepTwo fromToken={fromToken} toToken={toToken} fromAmount={fromAmount} toAmount={toAmount} exchangeRate={exchangeRate} fee={fee} />
+                <StepTwo
+                  fromToken={fromToken}
+                  toToken={toToken}
+                  fromAmount={fromAmount}
+                  toAmount={toAmount}
+                  exchangeRate={exchangeRate}
+                  fee={fee}
+                />
               </SwiperSlide>
             </Swiper>
             <Box
@@ -235,7 +279,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
                         opacity: '.8',
                       },
                     }}
-                    onClick={goNext}
+                    onClick={confirmCurrentTx}
                   >
                     Confirm
                   </Button>

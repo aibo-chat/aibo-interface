@@ -123,11 +123,12 @@ const StepTwo: React.FC<IStepTwoProps> = ({ fromToken, fromAmount, toToken, toAm
     </Box>
     <Box
       sx={{
+        mt: 4,
         width: '100%',
         border: '1px solid #F0F5FA',
         borderRadius: '8px',
         backgroundColor: '#FAFAFA',
-        padding: '10px 12px 12px',
+        padding: '12px',
       }}
     >
       <Box

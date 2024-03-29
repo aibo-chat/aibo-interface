@@ -5,6 +5,7 @@ import { useWallet } from '@aptos-labs/wallet-adapter-react'
 import { textCenterEllipsis } from '../message/CommonTransferMessage/components'
 import authImageMap from '../../../images/authImageMap'
 import { useConnectPetra } from '../../hooks/aptos/useConnectPetra'
+import LinkLogo from '../../../../public/res/svg/auth/link_logo.svg?react'
 
 const WalletHeader: React.FC = () => {
   const { connected, account, disconnect } = useWallet()
@@ -21,7 +22,7 @@ const WalletHeader: React.FC = () => {
             {
               name: 'offset',
               options: {
-                offset: [0, -20],
+                offset: [0, -16],
               },
             },
           ],
@@ -30,11 +31,11 @@ const WalletHeader: React.FC = () => {
       PopperProps={{
         sx: {
           '& .MuiTooltip-tooltip': {
-            backgroundColor: '#FAFAFA',
-            boxShadow: '0px 8px 24px -6px rgba(0, 0, 0, 0.16), 0px 0px 1px rgba(0, 0, 0, 0.4)',
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
             color: '#323C46',
             fontSize: '12px',
-            borderRadius: '8px',
+            borderRadius: '0',
             padding: '0px',
             lineHeight: '16px',
             maxWidth: '1000px',
@@ -56,8 +57,21 @@ const WalletHeader: React.FC = () => {
               width: '140px',
               height: '33px',
               borderRadius: '4px',
+              backgroundColor: '#FFFFFF',
+              fontSize: '14px',
+              fontWeight: 500,
+              lineHeight: '17px',
+              color: '#25B1FF',
+              border: '1px solid #F0F5FA',
             }}
           >
+            <LinkLogo
+              style={{
+                width: '16px',
+                height: '16px',
+                marginRight: '8px',
+              }}
+            />
             Disconnect
           </ButtonBase>
         </ClickAwayListener>

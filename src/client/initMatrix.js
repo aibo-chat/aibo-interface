@@ -118,27 +118,13 @@ class InitMatrix extends EventEmitter {
     const keys = await cryptoApiRef.exportRoomKeys()
     if (keys?.length) {
       console.log('RoomKeys发生变化', this.currentRoomKeyLength, '=>', keys.length)
-      const sSKeyId = getDefaultSSKey()
-      const privateKey = getPrivateKey(sSKeyId)
-      if (!privateKey) return
-      const hexString = arrayBuffer2Hex(privateKey)
-      const matrixRoomKeyList = []
-      for (const keyInfo of keys) {
-        const roomKeyId = keyInfo.session_id
-        const hmacPrivateKey = hmac256(hexString.toLowerCase(), roomKeyId.toLowerCase())
-        const roomKeyEncryptedObject = await CryptoJS.AES.encrypt(JSON.stringify(keyInfo), hmacPrivateKey)
-        matrixRoomKeyList.push({
-          roomId: keyInfo.room_id,
-          roomKeyId,
-          roomKeyText: roomKeyEncryptedObject.toString(),
-        })
-      }
       const result = await request.post(MatrixApi.saveMatrixRoomKey, {
-        matrixRoomKeyList,
+        time: Date.now(),
+        sessions: keys,
       })
       if (result?.data?.code === 200 && Array.isArray(result.data.data)) {
         console.log('获取增量roomKeys', result.data.data)
-        this.decryptRoomKeysAndInject(result.data.data)
+        await initMatrix.matrixClient.importRoomKeys(result.data.data)
       }
       this.currentRoomKeyLength = keys.length
     }
@@ -204,13 +190,13 @@ class InitMatrix extends EventEmitter {
     const result = await promise
     if (result?.data?.code === 200 && Array.isArray(result.data.data)) {
       result.data.data.forEach((roomKey) => {
-        if (!roomKey?.roomKeyId) return
+        if (!roomKey?.session_id) return
         if (!this.sessionIdCache) {
           this.sessionIdCache = {}
         }
-        this.sessionIdCache[roomKey.roomKeyId] = true
+        this.sessionIdCache[roomKey.session_id] = true
       })
-      await this.decryptRoomKeysAndInject(result.data.data)
+      await initMatrix.matrixClient.importRoomKeys(result.data.data)
       this.currentRoomKeyLength = result.data.data.length
     }
     this.setupSessionIdCacheDone = true

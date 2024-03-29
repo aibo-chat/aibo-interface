@@ -221,13 +221,13 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
           <Box
             sx={{
               fontSize: '12px',
-              color: percentBigNumber.isGreaterThan(0) ? '#00D0B7' : '#FF4940',
+              color: percentBigNumber.isGreaterThan(0) ? '#16C784' : '#EA3943',
               fontWeigh: 500,
               lineHeight: '15px',
               marginLeft: '8px',
               padding: '2px',
               borderRadius: '2px',
-              backgroundColor: percentBigNumber.isGreaterThan(0) ? '#00D0B71A' : '#FF49401A',
+              backgroundColor: percentBigNumber.isGreaterThan(0) ? '#16C7841A' : '#EA39431A',
             }}
           >
             <Box component="span">{percentBigNumber.isGreaterThan(0) ? '+' : '-'}</Box>
@@ -244,7 +244,11 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
     )
   }
   return (
-    <Box>
+    <Box
+      sx={{
+        width: { lg: 'auto', xs: '100%' },
+      }}
+    >
       <Box
         sx={{
           fontSize: '15px',
@@ -259,10 +263,16 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
       {targetTotalETFData ? (
         <Box
           sx={{
+            width: { lg: 'auto', xs: '100%' },
+            overflowX: 'auto',
+            overflowY: 'hidden',
             display: 'flex',
             alignItems: 'center',
             flexDirection: 'row',
             justifyContent: 'flex-start',
+            '&::-webkit-scrollbar': {
+              display: 'none',
+            },
             '& .itemContainer': {
               border: '1px solid #F0F0F7',
               width: '184px',
@@ -290,9 +300,9 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
                 alignItems: 'flex-start',
                 flexDirection: 'column',
                 fontSize: '14px',
-                fontWeight: 500,
+                fontWeight: 400,
                 lineHeight: '17px',
-                color: '#808080',
+                color: '#78828C',
                 '&Content': {
                   fontSize: '22px',
                   fontWeight: 500,
@@ -303,6 +313,7 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
                   '&Prefix': {
                     fontSize: '16px',
                     color: '#BFC6CD',
+                    lineHeight: '20px',
                     marginRight: '4px',
                   },
                 },
@@ -315,10 +326,10 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
             <Box
               className="itemImage"
               sx={{
-                width: '76px',
-                height: '76px',
-                top: '14px',
-                right: '10px',
+                width: '84px',
+                height: '84px',
+                top: '11px',
+                right: '16px',
               }}
               component="img"
               src={etfMessageImageMap.etfMessageTotalNetInflowIcon}
@@ -333,10 +344,10 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
             <Box
               className="itemImage"
               sx={{
-                width: '58px',
-                height: '74px',
-                top: '15px',
-                right: '16px',
+                width: '84px',
+                height: '84px',
+                top: '11px',
+                right: '6px',
               }}
               component="img"
               src={etfMessageImageMap.etfMessageTotalValueTradedIcon}
@@ -353,7 +364,7 @@ const ETFMessage: React.FC<IETFMessageProps> = ({ timelineSet, mEvent, mEventId 
               sx={{
                 width: '84px',
                 height: '84px',
-                top: '11px',
+                top: '9px',
                 right: '6px',
               }}
               component="img"

@@ -1,7 +1,6 @@
 import { action, flow, makeObservable, observable } from 'mobx'
 import { AxiosResponse } from 'axios'
 import { IRecoveryKey } from 'matrix-js-sdk/src/crypto/api'
-import { encrypt } from '@metamask/eth-sig-util'
 import { SecretStorageKeyDescription } from 'matrix-js-sdk/src/secret-storage'
 import { MatrixClient } from 'matrix-js-sdk/src/client'
 import { MatrixEvent } from 'matrix-js-sdk'
@@ -11,13 +10,10 @@ import defedApi, { IResponseType } from '../api/defed-api'
 import initMatrix from '../client/initMatrix'
 import { clearSecretStorageKeys, storePrivateKey } from '../client/state/secretStorageKeys'
 import { authRequest } from '../app/organisms/settings/AuthRequest'
-import { metaMask } from '../app/connectors/metaMask'
 import MatrixApi, { IGetMatrixRoomKeyResponse, IGetMatrixSecurityKeyResponse, IPostSaveMatrixSecurityKeyParams } from '../api/matrix-api'
 import { getDefaultSSKey, getSSKeyInfo } from '../util/matrixUtil'
-import { decryptByPrivateKey, getEncryptPublicKey } from '../util/encryptUtils'
 import { loadSecurityKeyFromLocal, removeLocalSecurityKey, saveSecurityKeyIntoLocal } from '../app/utils/common'
 import snackbarUtils from '../util/SnackbarUtils'
-import { isProduction } from '../constant'
 
 interface IAccountDataResponse {
   addressType: number
@@ -165,22 +161,9 @@ export default class AppStore {
     this.onPasswordModalConfirm = newValue
   };
 
-  *encryptSecurityKeyWithPublicKeyAndSave(publicKey: string, recoveryKey: IRecoveryKey) {
-    if (!(publicKey && recoveryKey?.encodedPrivateKey)) {
-      return this.setConnectError('没有获取到public_key')
-    }
-    console.log('获取到publicKey', publicKey)
-    const encryptedSecurityKey = encrypt({
-      publicKey,
-      data: recoveryKey.encodedPrivateKey,
-      version: 'x25519-xsalsa20-poly1305',
-    })
+  *encryptSecurityKeyWithPublicKeyAndSave(recoveryKey: IRecoveryKey) {
     saveSecurityKeyIntoLocal(recoveryKey.privateKey)
-    console.log('执行加密得到加密security_key', encryptedSecurityKey)
-    if (!encryptedSecurityKey.ciphertext) {
-      return this.setConnectError('加密securityKey失败')
-    }
-    yield request.post(MatrixApi.saveMatrixSecurityKey, { securityKey: JSON.stringify(encryptedSecurityKey), forceSave: true } as IPostSaveMatrixSecurityKeyParams)
+    yield request.post(MatrixApi.saveMatrixSecurityKey, { security_key: recoveryKey.encodedPrivateKey } as IPostSaveMatrixSecurityKeyParams)
     this.changeSetPasswordModalOpen(false)
     this.changeIsAppLoading(false)
   }
@@ -214,15 +197,17 @@ export default class AppStore {
   }
 
   *createSecurityKey(mx: MatrixClient) {
-    if (!this.userAccount?.proxyAddress) return
+    console.log('createSecurityKey-1')
     const recoveryKey: IRecoveryKey = yield mx.createRecoveryKeyFromPassphrase()
     clearSecretStorageKeys()
+    console.log('createSecurityKey-2')
 
     yield mx.bootstrapSecretStorage({
       createSecretStorageKey: async () => recoveryKey,
       setupNewKeyBackup: true,
       setupNewSecretStorage: true,
     })
+    console.log('createSecurityKey-3')
 
     const authUploadDeviceSigningKeys = async (makeRequest: (authData: any) => Promise<{}>) => {
       try {
@@ -241,143 +226,33 @@ export default class AppStore {
         this.setConnectError('AuthUploadDeviceSigningKeys Error')
       }
     }
+    console.log('createSecurityKey-4')
+
     yield mx.bootstrapCrossSigning({
       authUploadDeviceSigningKeys,
       setupNewCrossSigning: true,
     })
-    if (this.userAccount.addressType !== 1) {
-      // 邮箱用户
-      if (!this.userAccount.privateKey) {
-        return this.setConnectError('邮箱用户privateKey不存在')
-      }
-      this.changeSetPasswordModalOpen(true)
-      this.changeOnPasswordModalConfirm(async (decryptedPrivateKey: string) => {
-        const publicKey = getEncryptPublicKey(decryptedPrivateKey)
-        await this.encryptSecurityKeyWithPublicKeyAndSave(publicKey, recoveryKey)
-      })
-    } else {
-      // metamask用户
-      if (!this.userAccount.currentLoginAddress) {
-        return this.setConnectError('账号数据中不存在CurrentLoginAddress')
-      }
-      if (!metaMask?.activate) {
-        return this.setConnectError('metamask环境不正确')
-      }
-      yield metaMask.activate()
-      if (!metaMask.provider) {
-        return this.setConnectError('metamask链接失败')
-      }
-      console.log('metamask链接成功,执行metamask加密')
-      if (!this.userAccount.currentLoginAddress) {
-        return this.setConnectError('metamask没有查询到accounts信息')
-      }
-      console.log('获取metamask_accounts', this.userAccount.currentLoginAddress)
-      try {
-        const accounts: Array<string> = yield metaMask.provider.request({
-          method: 'eth_requestAccounts',
-        })
-        if (accounts.indexOf(this.userAccount.currentLoginAddress) === -1) {
-          yield metaMask.provider.request({
-            method: 'wallet_revokePermissions',
-            params: [
-              {
-                eth_accounts: {},
-              },
-            ],
-          })
-          return this.setConnectError(`Please connect to MetaMask with account: ${this.userAccount.currentLoginAddress}`)
-        }
-        const publicKey: string = yield metaMask.provider.request({
-          method: 'eth_getEncryptionPublicKey',
-          params: [this.userAccount.currentLoginAddress],
-        })
-        yield this.encryptSecurityKeyWithPublicKeyAndSave(publicKey, recoveryKey)
-      } catch (e) {
-        return this.setConnectError('Metamask获取publicKey失败')
-      }
-    }
+    console.log('createSecurityKey-5')
+
+    yield this.encryptSecurityKeyWithPublicKeyAndSave(recoveryKey)
   }
 
-  *injectSecurityKey(mx: MatrixClient, encryptedSecurityKey: string, listRoomKeyPromise: Promise<AxiosResponse<IResponseType<IGetMatrixRoomKeyResponse>>>) {
-    if (!this.userAccount?.proxyAddress) return
-    if (this.userAccount.addressType === 1) {
-      // metamask 用户
-      if (!this.userAccount.currentLoginAddress) {
-        return this.setConnectError('账号数据中不存在CurrentLoginAddress')
-      }
-      if (!metaMask?.activate) {
-        return this.setConnectError('metamask环境不正确')
-      }
-      yield metaMask.activate()
-      if (!metaMask.provider) {
-        return this.setConnectError('metamask链接失败')
-      }
-      console.log('metamask链接成功,执行metamask解密')
-      if (!this.userAccount.currentLoginAddress) {
-        return this.setConnectError('metamask没有查询到accounts信息')
-      }
-      console.log('获取metamask_accounts', this.userAccount.currentLoginAddress)
-      try {
-        const accounts: Array<string> = yield metaMask.provider.request({
-          method: 'eth_requestAccounts',
-        })
-        if (accounts.indexOf(this.userAccount.currentLoginAddress) === -1) {
-          yield metaMask.provider.request({
-            method: 'wallet_revokePermissions',
-            params: [
-              {
-                eth_accounts: {},
-              },
-            ],
-          })
-          return this.setConnectError(`Please connect to MetaMask with account: ${this.userAccount.currentLoginAddress}`)
-        }
-        const decryptedSecurityKey: string = yield metaMask.provider.request({
-          method: 'eth_decrypt',
-          params: [encryptedSecurityKey, this.userAccount.currentLoginAddress],
-        })
-        this.decryptSecurityKeyAndLoad(decryptedSecurityKey, listRoomKeyPromise)
-      } catch (e) {
-        const decryptError = e as unknown as {
-          code: number
-          message: string
-        }
-        console.log('eth_decrypt error:', e)
-        if (decryptError.code && decryptError.message) {
-          return this.setConnectError(decryptError.message)
-        }
-      }
-    } else {
-      // 邮箱用户
-      if (!this.userAccount.privateKey) {
-        return this.setConnectError('邮箱用户privateKey不存在')
-      }
-      try {
-        this.changeSetPasswordModalOpen(true)
-        this.changeOnPasswordModalConfirm(async (decryptedPrivateKey: string) => {
-          const decryptedSecurityKey = decryptByPrivateKey(decryptedPrivateKey, encryptedSecurityKey)
-          await this.decryptSecurityKeyAndLoad(decryptedSecurityKey, listRoomKeyPromise)
-        })
-      } catch (e) {
-        console.error('解密securityKey失败', e)
-        return this.setConnectError('解密securityKey失败')
-      }
-    }
+  injectSecurityKey(encodeSecurityKey: string, listRoomKeyPromise: Promise<AxiosResponse<IResponseType<IGetMatrixRoomKeyResponse>>>) {
+    this.decryptSecurityKeyAndLoad(encodeSecurityKey, listRoomKeyPromise)
   }
 
   *dealWithSecurityKey() {
-    if (!this.userAccount?.proxyAddress) return
     const mx = initMatrix.matrixClient
-    console.log('Matrix Client已初始化')
     if (!mx) {
       return this.setConnectError('Matrix Client初始化失败')
     }
+    const currentUserId = mx.getUserId()
+    if (!currentUserId) {
+      return this.setConnectError('没有获取到userId')
+    }
     try {
       const result: AxiosResponse<IResponseType<IGetMatrixSecurityKeyResponse>> = yield request.get(MatrixApi.getMatrixSecurityKey)
-      if (result?.data?.code !== 200) {
-        return this.setConnectError('网络获取securityKey不正确')
-      }
-      if (!(result.data.data?.proxy === this.userAccount.proxyAddress && result.data.data.securityKey)) {
+      if (!(result.data.data?.user_id === currentUserId && result.data.data.security_key)) {
         console.log('用户不存在已生成的security_key')
         return this.createSecurityKey(mx as unknown as MatrixClient)
       }
@@ -387,37 +262,19 @@ export default class AppStore {
       if (localSecurityKey) {
         return this.decryptSecurityKeyAndLoad(localSecurityKey, listRoomKeyPromise)
       }
-      return this.injectSecurityKey(mx as unknown as MatrixClient, result.data.data.securityKey, listRoomKeyPromise)
+      return this.injectSecurityKey(result.data.data.security_key, listRoomKeyPromise)
     } catch (e) {
       return this.setConnectError('网络获取securityKey失败')
     }
   }
 
-  *initUserData(targetProxy?: string) {
-    return this.changeIsAppLoading(false)
-    // try {
-    //   const result: AxiosResponse<IResponseType<IAccountDataResponse>> = yield request.get(defedApi.getAccountData)
-    //   console.log('initUserData', result, targetProxy)
-    //   if (!result?.data?.data?.proxyAddress) {
-    //     return
-    //   }
-    //   if (targetProxy && result.data.data.proxyAddress !== targetProxy) {
-    //     yield initMatrix.logout()
-    //     return window.location.replace(`${window.location.origin}/?loginWay=defed`)
-    //   }
-    //   this.userAccount = result.data.data
-    //   yield this.dealWithSecurityKey()
-    // } catch (e) {
-    //   console.error('initUserData Error:', e)
-    //   if ((e as Error)?.message !== 'Your access token is expired. Please login again.') {
-    //     return this.setConnectError('InitUserData Error')
-    //   }
-    //   yield initMatrix.logout()
-    //   return window.location.replace(`${import.meta.env.VITE_DEFED_FINANCE_URL}`)
-    // }
-    // if (!isProduction) {
-    //   window.changeDeveloperMode = this.changeDeveloperMode
-    // }
+  *initUserData() {
+    // return this.changeIsAppLoading(false)
+    try {
+      yield this.dealWithSecurityKey()
+    } catch (e) {
+      console.error('initUserData Error:', e)
+    }
   }
 
   changeSetPasswordModalOpen = (newValue: boolean) => {

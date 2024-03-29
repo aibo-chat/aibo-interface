@@ -1,21 +1,20 @@
 import { observer } from 'mobx-react-lite'
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { Box, Button, ButtonBase, buttonClasses, Popover } from '@mui/material'
 import { EventTimelineSet, MatrixEvent } from 'matrix-js-sdk'
 import { useTranslation } from 'react-i18next'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Swiper as SwiperClass } from 'swiper/types'
 import { useSetAtom } from 'jotai'
-import GPTIcon from '../../../../public/res/svg/feeds_news/common_outlined_gpt_icon.svg?react'
-import AskIcon from '../../../../public/res/svg/feeds_news/common_outlined_ask_icon.svg?react'
-import DetailIcon from '../../../../public/res/svg/feeds_news/common_outlined_detail_icon.svg?react'
 import TriangleIcon from '../../../../public/res/svg/feeds_news/common_fullfilled_triangle_icon.svg?react'
+import FeedsNewsMessageLog from '../../../../public/res/svg/feeds_news/feeds_news_message_logo.svg?react'
 import FeedsSingleNews, { ArticleType, ISingleNewsHandle } from './FeedsSingleNews'
 import { useMobxStore } from '../../../stores/StoreProvider'
 import { IAskFeedsNewsDraft } from '../../../stores/room-store'
 import { roomIdToReplyDraftAtomFamily } from '../../state/roomInputDrafts'
 import { getMessageContent } from '../../hooks/useMessageContent'
 import { BotAnswerMessageContent } from '../../../types/defed/message'
+import feedsNewsImageMap from '../../../images/feedsNewsImageMap'
 
 export interface SingleNewsData {
   content: string
@@ -56,7 +55,7 @@ export interface OperationData {
 const FeedsNewsMessage: React.FC<IFeedsNewsProps> = ({ timelineSet, mEvent, mEventId }) => {
   const { t } = useTranslation()
   const {
-    roomStore: { setAskFeedsNewsDraft, updateFeedNewsOperationDataByArticleIds, updateFeedNewsOperationDataByArticleId },
+    roomStore: { setAskFeedsNewsDraft },
   } = useMobxStore()
   const messageBody = getMessageContent<BotAnswerMessageContent>(timelineSet, mEventId, mEvent)
   const newsContent = useMemo<Array<SingleNewsData>>(() => {
@@ -130,36 +129,37 @@ const FeedsNewsMessage: React.FC<IFeedsNewsProps> = ({ timelineSet, mEvent, mEve
     newsRef.current[swiperIndex]?.setCollapseIn(true)
     newsRef.current[swiperIndex]?.setTranslationLanguage(value)
   }
-  const initOperateData = async () => {
-    if (newsContent.length) {
-      const articleIds = newsContent.map((item) => item._id)
-      await updateFeedNewsOperationDataByArticleIds(articleIds)
-    }
-  }
-  useLayoutEffect(() => {
-    initOperateData()
-  }, [newsContent?.length])
   const onPopoverClick = () => {
     setTranslateMenuAnchorElement(null)
-  }
-  const updateFeeds = (data: OperationData) => {
-    updateFeedNewsOperationDataByArticleId(data.articleId, data)
   }
   return (
     <Box
       sx={{
-        width: '398px',
-        borderRadius: '20px',
+        width: { xs: '100%', lg: '398px' },
+        borderRadius: '0px 8px 8px 8px',
         border: '1px solid #F2F2F2',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        backgroundColor: '#FFF',
       }}
     >
       <Box
         sx={{
           width: '100%',
-          backgroundColor: '#FFF',
+          padding: '7px 12px 0',
+        }}
+      >
+        <FeedsNewsMessageLog
+          style={{
+            width: '168px',
+            height: '21px',
+          }}
+        />
+      </Box>
+      <Box
+        sx={{
+          width: '100%',
         }}
       >
         <Swiper
@@ -181,7 +181,7 @@ const FeedsNewsMessage: React.FC<IFeedsNewsProps> = ({ timelineSet, mEvent, mEve
                 height: index === swiperIndex ? 'auto' : '0px',
               }}
             >
-              <FeedsSingleNews news={item} ref={addNewsRef} updateFeeds={updateFeeds} />
+              <FeedsSingleNews news={item} ref={addNewsRef} />
             </SwiperSlide>
           ))}
         </Swiper>
@@ -238,22 +238,34 @@ const FeedsNewsMessage: React.FC<IFeedsNewsProps> = ({ timelineSet, mEvent, mEve
       <Box
         sx={{
           width: '100%',
+          padding: '0 12px',
+        }}
+      >
+        <Box
+          sx={{
+            width: '100%',
+            height: '1px',
+            backgroundColor: '#F5F5F5',
+          }}
+        />
+      </Box>
+      <Box
+        sx={{
+          width: '100%',
           height: '64px',
-          backgroundColor: '#FBFBFB',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 12px',
-          borderTop: '1px solid #F2F2F2',
           [`& .${buttonClasses.root}`]: {
-            backgroundColor: '#F2F2F2',
-            color: '#838383',
-            borderRadius: '8px',
-            height: '40px',
-            width: '116px',
-            '& > svg': {
-              stroke: '#838383',
-            },
+            color: '#25B1FF',
+            fontSize: '12px',
+            fontWeight: 500,
+            lineHeight: '12px',
+            borderRadius: { xs: '4px', lg: '8px' },
+            height: { xs: '32px', lg: '40px' },
+            width: { xs: '96px', lg: '116px' },
+            border: '1px solid #25B1FF',
           },
         }}
       >
@@ -321,33 +333,37 @@ const FeedsNewsMessage: React.FC<IFeedsNewsProps> = ({ timelineSet, mEvent, mEve
             setTranslateMenuAnchorElement(e.target as HTMLButtonElement)
           }}
         >
-          <GPTIcon
-            style={{
-              width: '20px',
-              height: '20px',
-              fill: '#10A37F',
-              marginRight: '8px',
-              stroke: 'none',
+          <Box
+            component="img"
+            src={feedsNewsImageMap.gptIcon}
+            sx={{
+              width: '12px',
+              height: '12px',
+              marginRight: '4px',
             }}
           />
           {t('Translate')}
         </Button>
         <Button onClick={onDetailButtonClick}>
-          <DetailIcon
-            style={{
-              width: '20px',
-              height: '20px',
-              marginRight: '8px',
+          <Box
+            component="img"
+            src={feedsNewsImageMap.detailIcon}
+            sx={{
+              width: '12px',
+              height: '12px',
+              marginRight: '4px',
             }}
           />
           {t('Detail')}
         </Button>
         <Button onClick={onAskQuestion}>
-          <AskIcon
-            style={{
-              width: '20px',
-              height: '20px',
-              marginRight: '8px',
+          <Box
+            component="img"
+            src={feedsNewsImageMap.askIcon}
+            sx={{
+              width: '12px',
+              height: '12px',
+              marginRight: '4px',
             }}
           />
           {t('Ask')}

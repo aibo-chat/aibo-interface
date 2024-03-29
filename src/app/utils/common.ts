@@ -199,8 +199,7 @@ export const saveSecurityKeyIntoLocal = (privateKey: Uint8Array) => {
   const base64Key = encodeBase64(privateKey)
   const userId = window.localStorage.getItem('cinny_user_id')
   if (!userId) return
-  const proxy = parseMatrixAccountId(userId).toLowerCase()
-  const pwd = hmac256(proxy, 'security-key')
+  const pwd = hmac256(userId.toLowerCase(), 'security-key')
   const encryptionKey = CryptoJS.AES.encrypt(base64Key, pwd).toString()
   window.localStorage.setItem(LOCAL_SECURITY_KEY, encryptionKey)
 }
@@ -213,8 +212,7 @@ export const loadSecurityKeyFromLocal = () => {
   try {
     const userId = window.localStorage.getItem('cinny_user_id')
     if (!userId) return
-    const proxy = parseMatrixAccountId(userId).toLowerCase()
-    const pwd = hmac256(proxy, 'security-key')
+    const pwd = hmac256(userId.toLowerCase(), 'security-key')
     const decodeKey = CryptoJS.AES.decrypt(encryptionKey, pwd).toString(CryptoJS.enc.Utf8)
     if (!decodeKey) {
       removeLocalSecurityKey()

@@ -1,23 +1,14 @@
 export interface IPostSaveMatrixSecurityKeyParams {
-  securityKey: string
-  forceSave: boolean
+  security_key: string
 }
 export interface IGetMatrixSecurityKeyResponse {
-  createDate: number
   id: number
-  proxy: string
-  securityKey: string
-  updateDate: number
+  user_id: string
+  security_key: string
+  create_date: string
+  update_date: string
 }
-export type IGetMatrixRoomKeyResponse = Array<{
-  createDate: number
-  id: number
-  proxy: string
-  roomId: string
-  roomKeyId: string
-  roomKeyText: string
-  updateDate: number
-}>
+export type IGetMatrixRoomKeyResponse = Array<{}>
 
 export type IGetBotListSingleBotType = {
   avatar_url: string
@@ -38,13 +29,13 @@ export type IGetBotListSingleBotType = {
 export type IGetBotListResponse = Array<IGetBotListSingleBotType>
 enum MatrixApi {
   // 获取用户加密后的securityKey
-  getMatrixSecurityKey = 'defed/matrix/getMatrixSecurityKey',
+  getMatrixSecurityKey = 'aibo/matrix/key/getSecurityKey',
   // 保存用户加密后的securityKey
-  saveMatrixSecurityKey = 'defed/matrix/saveMatrixSecurityKey',
+  saveMatrixSecurityKey = 'aibo/matrix/key/saveSecurityKey',
   // 保存用户加密后的RoomKey
-  saveMatrixRoomKey = 'defed/matrix/saveMatrixRoomKey',
+  saveMatrixRoomKey = 'aibo/matrix/key/saveSessionKey',
   // 获取用户加密后的RoomKey
-  listMatrixRoomKey = 'defed/matrix/listMatrixRoomKey',
+  listMatrixRoomKey = 'aibo/matrix/key/listSessionKey',
   // 获取AiBot列表
   listMatrixBot = 'aibo/matrix/bot/list',
 }

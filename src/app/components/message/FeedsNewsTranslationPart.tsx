@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Box, CircularProgress } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { AxiosResponse } from 'axios'
-import { request } from '../../../api/request'
+import { commonRequest } from '../../../api/request'
 import snackbarUtils from '../../../util/SnackbarUtils'
 import DefedApi, { IResponseType } from '../../../api/defed-api'
 
@@ -29,7 +29,7 @@ const FeedsNewsTranslationPart: React.FC<IFeedsModalTranslationPartProps> = ({ a
       }
       setIsTranslating(true)
       try {
-        const result: AxiosResponse<IResponseType<string | undefined>> = await request.post(DefedApi.postTranslate, {
+        const result: AxiosResponse<IResponseType<string | undefined>> = await commonRequest.post(`https://v2.defed.finance/${DefedApi.postTranslate}`, {
           articleId,
           language: translationLanguage,
           articleType,

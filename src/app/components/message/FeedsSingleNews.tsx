@@ -1,24 +1,10 @@
 import { observer } from 'mobx-react-lite'
 import React, { Dispatch, SetStateAction, useImperativeHandle, useState } from 'react'
-import { AxiosResponse } from 'axios'
-import { Box, ButtonBase, buttonBaseClasses, Collapse, Skeleton } from '@mui/material'
+import { Box, ButtonBase, Collapse } from '@mui/material'
 import dayjs from 'dayjs'
-import { useTranslation } from 'react-i18next'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { useMobxStore } from '../../../stores/StoreProvider'
-import { request } from '../../../api/request'
-import DefedApi, { IResponseType } from '../../../api/defed-api'
-import snackbarUtils from '../../../util/SnackbarUtils'
 import FeedsNewsTranslationPart from './FeedsNewsTranslationPart'
 import FeedsNewsImageMap from '../../../images/feedsNewsImageMap'
-import CommonLottieAnimationContainer from '../common/CommonLottieAnimationContainer'
-import LongJson from '../../../../public/res/json/long.json'
-import ShortJson from '../../../../public/res/json/short.json'
-import LongIcon from '../../../../public/res/svg/feeds_news/feeds_modal_long_icon.svg?react'
-import LongActiveIcon from '../../../../public/res/svg/feeds_news/feeds_modal_long_active_icon.svg?react'
-import ShortIcon from '../../../../public/res/svg/feeds_news/feeds_modal_short_icon.svg?react'
-import ShortActiveIcon from '../../../../public/res/svg/feeds_news/feeds_modal_short_active_icon.svg?react'
-import ShareIcon from '../../../../public/res/svg/feeds_news/common_outlined_share_icon.svg?react'
 
 dayjs.extend(relativeTime, {
   rounding: Math.floor,
@@ -40,7 +26,6 @@ export interface FeedsSingleNewsNecessaryData {
 }
 interface ISingleNewsProps {
   news: FeedsSingleNewsNecessaryData
-  updateFeeds: (params: { articleId: string; likeFlag: 0 | 1; longFlag: 0 | 1; shortFlag: 0 | 1 }) => void
   articleType?: ArticleType
   renderImagePart?: (originData: any) => React.ReactNode
   originData?: any
@@ -51,18 +36,10 @@ export interface ISingleNewsHandle {
   goDetail: () => void
   setCollapseIn: Dispatch<SetStateAction<boolean>>
 }
-const FeedsSingleNews = React.forwardRef<ISingleNewsHandle, ISingleNewsProps>(({ news, updateFeeds, articleType, renderImagePart, originData }, ref) => {
+const FeedsSingleNews = React.forwardRef<ISingleNewsHandle, ISingleNewsProps>(({ news, articleType, renderImagePart, originData }, ref) => {
   const { _id: articleId, tags } = news
-  const { t } = useTranslation()
-  const {
-    appStore: { userAccount },
-    modalStore: { changeFeedToShare },
-    roomStore: { feedNewsOperationData },
-  } = useMobxStore()
   const [translationLanguage, setTranslationLanguage] = useState<string>('')
   const [collapseIn, setCollapseIn] = useState<boolean>(false)
-  const currentOperationData = feedNewsOperationData.get(articleId)
-  const [buttonLoading, setButtonLoading] = useState(false)
   const goDetail = () => {
     if (news.source_url) {
       window.open(news.source_url)
@@ -74,87 +51,11 @@ const FeedsSingleNews = React.forwardRef<ISingleNewsHandle, ISingleNewsProps>(({
     goDetail,
     setCollapseIn,
   }))
-  const operateArticle: (params: { likeFlag: 1 | 0; longFlag: 1 | 0; articleId: string; shortFlag: 0 | 1 }) => Promise<boolean> = async (params) => {
-    setButtonLoading(true)
-    let finalResult: boolean
-    try {
-      const finalParams: { likeFlag: 1 | 0; longFlag: 1 | 0; articleId: string; shortFlag: 0 | 1; proxy?: string } = { ...params }
-      if (userAccount?.proxyAddress) {
-        finalParams.proxy = userAccount.proxyAddress
-      }
-      const result: AxiosResponse<IResponseType<boolean>> = await request.post(DefedApi.postOperateArticle, finalParams)
-      if (result?.data?.msg) {
-        snackbarUtils.error(result.data.msg)
-        finalResult = false
-      } else {
-        finalResult = result.data.data
-      }
-    } catch (e) {
-      console.error(e)
-      finalResult = false
-    }
-    if (finalResult) {
-      const newItems = {
-        articleId,
-        likeFlag: params.likeFlag,
-        longFlag: params.longFlag,
-        shortFlag: params.shortFlag,
-      }
-      updateFeeds(newItems)
-    }
-    setButtonLoading(false)
-    return finalResult
-  }
-  const onLongButtonClick = async () => {
-    if (!currentOperationData) {
-      return
-    }
-    const { longFlag, shortFlag, likeFlag } = currentOperationData
-    if (!longFlag) {
-      await operateArticle({
-        articleId,
-        longFlag: 1,
-        shortFlag: 0,
-        likeFlag,
-      })
-    } else {
-      await operateArticle({
-        articleId,
-        longFlag: 0,
-        shortFlag,
-        likeFlag,
-      })
-    }
-  }
-  const onShortButtonClick = async () => {
-    if (!currentOperationData) {
-      return
-    }
-    const { longFlag, shortFlag, likeFlag } = currentOperationData
-    if (!shortFlag) {
-      await operateArticle({
-        articleId,
-        longFlag: 0,
-        shortFlag: 1,
-        likeFlag,
-      })
-    } else {
-      await operateArticle({
-        articleId,
-        longFlag,
-        shortFlag: 0,
-        likeFlag,
-      })
-    }
-  }
-  const onShareButtonClick = () => {
-    changeFeedToShare(news)
-  }
   return (
     <Box
       sx={{
         width: '100%',
-        padding: '12px 12px 0',
+        padding: '8px 12px 0',
         boxSizing: 'border-box',
       }}
     >
@@ -163,8 +64,8 @@ const FeedsSingleNews = React.forwardRef<ISingleNewsHandle, ISingleNewsProps>(({
           fontSize: '16px',
           fontWeight: 500,
           lineHeight: '24px',
-          color: '#191919',
-          marginBottom: '4px',
+          color: '#23282D',
+          marginBottom: { xs: '8px', lg: '4px' },
           flexShrink: 0,
         }}
       >
@@ -175,8 +76,10 @@ const FeedsSingleNews = React.forwardRef<ISingleNewsHandle, ISingleNewsProps>(({
         sx={{
           display: 'flex',
           fontSize: '12px',
-          marginBottom: '14px',
-          color: '#4685FF',
+          fontWeight: 500,
+          lineHeight: '16px',
+          marginBottom: { xs: '12px', lg: '14px' },
+          color: '#23282D',
           flexWrap: 'wrap',
           flexShrink: 0,
         }}
@@ -185,8 +88,8 @@ const FeedsSingleNews = React.forwardRef<ISingleNewsHandle, ISingleNewsProps>(({
           <Box
             key={index}
             sx={{
-              borderRadius: '90px',
-              bgcolor: '#EBF0F5',
+              borderRadius: '4px',
+              bgcolor: '#F4F6F9',
               p: '4px 8px',
               mr: 2,
               mt: 2,
@@ -203,9 +106,10 @@ const FeedsSingleNews = React.forwardRef<ISingleNewsHandle, ISingleNewsProps>(({
           src={news.image_url}
           sx={{
             width: '100%',
-            height: '206px',
+            height: { xs: '152px', lg: '206px' },
             flexShrink: 0,
-            borderRadius: '6px',
+            borderRadius: { xs: '4px', lg: '6px' },
+            marginBottom: { xs: '12px', lg: '0px' },
           }}
         />
       ) : renderImagePart ? (
@@ -216,7 +120,7 @@ const FeedsSingleNews = React.forwardRef<ISingleNewsHandle, ISingleNewsProps>(({
           fontSize: '14px',
           fontWeight: 400,
           lineHeight: '20px',
-          color: '#78828C',
+          color: '#23282D',
           maskImage: collapseIn ? 'unset' : 'linear-gradient(180deg,#FFF 0%,#FFF 75%, transparent 100%)',
           maskSize: '100%',
           maskPosition: 'top left',
@@ -233,8 +137,8 @@ const FeedsSingleNews = React.forwardRef<ISingleNewsHandle, ISingleNewsProps>(({
       <Box
         sx={{
           fontSize: '12px',
-          fontWeight: 400,
-          lineHeight: '16px',
+          fontWeight: 500,
+          lineHeight: '14px',
           color: '#78828C',
           position: 'relative',
         }}
@@ -262,111 +166,6 @@ const FeedsSingleNews = React.forwardRef<ISingleNewsHandle, ISingleNewsProps>(({
         </ButtonBase>
         {dayjs(news.timestamp).fromNow()}
       </Box>
-      {currentOperationData ? (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: '12px',
-            fontWeight: 500,
-            lineHeight: '16px',
-            color: '#838383',
-            flexShrink: 0,
-            '& > div': {
-              flex: 1,
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '12px 0 14px',
-            },
-            [`& .${buttonBaseClasses.root}`]: {
-              fontFamily: 'var(--font-secondary)',
-              '& > div:first-of-type': {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                backgroundColor: '#F4F6F9',
-                marginRight: '8px',
-                position: 'relative',
-              },
-            },
-          }}
-        >
-          <Box>
-            <ButtonBase onClick={onLongButtonClick} disabled={buttonLoading}>
-              <Box>
-                <CommonLottieAnimationContainer animationJson={LongJson} flag={currentOperationData.longFlag} />
-                {currentOperationData.longFlag ? (
-                  <LongActiveIcon
-                    style={{
-                      position: 'absolute',
-                      zIndex: 0,
-                    }}
-                  />
-                ) : (
-                  <LongIcon
-                    style={{
-                      position: 'absolute',
-                      zIndex: 0,
-                    }}
-                  />
-                )}
-              </Box>
-              <Box>{t('Long')}</Box>
-            </ButtonBase>
-          </Box>
-          <Box>
-            <ButtonBase onClick={onShortButtonClick} disabled={buttonLoading}>
-              <Box>
-                <CommonLottieAnimationContainer animationJson={ShortJson} flag={currentOperationData.shortFlag} />
-                {currentOperationData.shortFlag ? (
-                  <ShortActiveIcon
-                    style={{
-                      position: 'absolute',
-                      zIndex: 0,
-                    }}
-                  />
-                ) : (
-                  <ShortIcon
-                    style={{
-                      position: 'absolute',
-                      zIndex: 0,
-                    }}
-                  />
-                )}
-              </Box>
-              <Box>{t('Short')}</Box>
-            </ButtonBase>
-          </Box>
-          <Box>
-            <ButtonBase onClick={onShareButtonClick}>
-              <Box>
-                <ShareIcon
-                  style={{
-                    width: '18px',
-                    height: '18px',
-                    fill: '#6F767E',
-                  }}
-                />
-              </Box>
-              <Box>{t('Share')}</Box>
-            </ButtonBase>
-          </Box>
-        </Box>
-      ) : (
-        <Skeleton
-          sx={{
-            width: '100%',
-            height: '24px',
-            margin: '12px 0 14px',
-          }}
-          animation="wave"
-        />
-      )}
     </Box>
   )
 })

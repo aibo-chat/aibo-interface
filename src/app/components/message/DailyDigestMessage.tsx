@@ -8,16 +8,16 @@ import advancedFormat from 'dayjs/plugin/advancedFormat'
 import { useSetAtom } from 'jotai'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Swiper as SwiperClass } from 'swiper/types'
-import GPTIcon from '../../../../public/res/svg/feeds_news/common_outlined_gpt_icon.svg?react'
-import AskIcon from '../../../../public/res/svg/feeds_news/common_outlined_ask_icon.svg?react'
 import TriangleIcon from '../../../../public/res/svg/feeds_news/common_fullfilled_triangle_icon.svg?react'
 import { BotAnswerMessageContent } from '../../../types/defed/message'
 import { getMessageContent } from '../../hooks/useMessageContent'
 import FeedsSingleNews, { ArticleType, FeedsSingleNewsNecessaryData, ISingleNewsHandle } from './FeedsSingleNews'
-import { OperationData, TranslateMenu } from './FeedsNewsMessage'
+import { TranslateMenu } from './FeedsNewsMessage'
 import { IAskFeedsNewsDraft } from '../../../stores/room-store'
 import { useMobxStore } from '../../../stores/StoreProvider'
 import { roomIdToReplyDraftAtomFamily } from '../../state/roomInputDrafts'
+import feedsNewsImageMap from '../../../images/feedsNewsImageMap'
+import DailyDigestMessageLogo from '../../../../public/res/svg/feeds_news/daily_digest_message_logo.svg?react'
 
 dayjs.extend(advancedFormat)
 interface IDailyDigestMessageProps {
@@ -41,7 +41,7 @@ export const generateDailyDigestTitle = (tokenName: string, summaryDate: string)
 const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, mEvent, mEventId }) => {
   const { t } = useTranslation()
   const {
-    roomStore: { setAskFeedsNewsDraft, updateFeedNewsOperationDataByArticleId, updateFeedNewsOperationDataByArticleIds, updateTokenInfoWithTokenName, tokenInfoWithTokenName },
+    roomStore: { setAskFeedsNewsDraft, updateTokenInfoWithTokenName, tokenInfoWithTokenName },
   } = useMobxStore()
   const setReplyDraft = useSetAtom(roomIdToReplyDraftAtomFamily(mEvent.getRoomId() || ''))
   const messageBody = getMessageContent<BotAnswerMessageContent>(timelineSet, mEventId, mEvent)
@@ -104,8 +104,6 @@ const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, m
   }
   const initOperateData = async () => {
     if (newsContent?.length) {
-      const articleIds = newsContent.map((item) => item._id)
-      await updateFeedNewsOperationDataByArticleIds(articleIds)
       const tokenNames = digestContent.map((item) => item.token_name)
       await updateTokenInfoWithTokenName(tokenNames)
     }
@@ -114,9 +112,6 @@ const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, m
     initOperateData()
   }, [newsContent?.length])
   const [translateMenuAnchorElement, setTranslateMenuAnchorElement] = useState<HTMLButtonElement | null>(null)
-  const updateFeeds = (data: OperationData) => {
-    updateFeedNewsOperationDataByArticleId(data.articleId, data)
-  }
   const onPopoverClick = () => {
     setTranslateMenuAnchorElement(null)
   }
@@ -199,19 +194,31 @@ const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, m
   return (
     <Box
       sx={{
-        width: '398px',
-        borderRadius: '20px',
+        width: { xs: '100%', lg: '398px' },
+        borderRadius: '0px 8px 8px 8px',
         border: '1px solid #F2F2F2',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        backgroundColor: '#FBFBFB',
+        backgroundColor: '#FFF',
       }}
     >
       <Box
         sx={{
           width: '100%',
-          backgroundColor: '#FFF',
+          padding: '7px 12px 0',
+        }}
+      >
+        <DailyDigestMessageLogo
+          style={{
+            width: '174px',
+            height: '21px',
+          }}
+        />
+      </Box>
+      <Box
+        sx={{
+          width: '100%',
         }}
       >
         <Swiper
@@ -233,7 +240,7 @@ const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, m
                 height: index === swiperIndex ? 'auto' : '0px',
               }}
             >
-              <FeedsSingleNews news={item} ref={addNewsRef} updateFeeds={updateFeeds} articleType={ArticleType.Digest} renderImagePart={renderImagePart} originData={digestContent[index]} />
+              <FeedsSingleNews news={item} ref={addNewsRef} articleType={ArticleType.Digest} renderImagePart={renderImagePart} originData={digestContent[index]} />
             </SwiperSlide>
           ))}
         </Swiper>
@@ -292,30 +299,34 @@ const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, m
       <Box
         sx={{
           width: '100%',
+          padding: '0 12px',
+        }}
+      >
+        <Box
+          sx={{
+            width: '100%',
+            height: '1px',
+            backgroundColor: '#F5F5F5',
+          }}
+        />
+      </Box>
+      <Box
+        sx={{
+          width: '100%',
           height: '64px',
-          backgroundColor: '#FBFBFB',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 12px',
-          borderTop: '1px solid #F2F2F2',
           [`& .${buttonClasses.root}`]: {
-            backgroundColor: '#F2F2F2',
-            color: '#838383',
-            borderRadius: '8px',
-            height: '40px',
+            color: '#25B1FF',
+            fontSize: '12px',
+            fontWeight: 500,
+            lineHeight: '12px',
+            borderRadius: { xs: '4px', lg: '8px' },
+            height: { xs: '32px', lg: '40px' },
             flex: 1,
-            '& > svg': {
-              stroke: '#838383',
-            },
-            [`&.${buttonClasses.disabled}`]: {
-              backgroundColor: '#F8F8F8',
-              color: '#E8E8E8',
-              opacity: 1,
-              '& > svg': {
-                stroke: '#E8E8E8',
-              },
-            },
+            border: '1px solid #25B1FF',
           },
         }}
       >
@@ -383,26 +394,28 @@ const DailyDigestMessage: React.FC<IDailyDigestMessageProps> = ({ timelineSet, m
             setTranslateMenuAnchorElement(e.target as HTMLButtonElement)
           }}
           sx={{
-            marginRight: '8px',
+            marginRight: '12px',
           }}
         >
-          <GPTIcon
-            style={{
-              width: '20px',
-              height: '20px',
-              fill: '#10A37F',
-              marginRight: '8px',
-              stroke: 'none',
+          <Box
+            component="img"
+            src={feedsNewsImageMap.gptIcon}
+            sx={{
+              width: '12px',
+              height: '12px',
+              marginRight: '4px',
             }}
           />
           {t('Translate')}
         </Button>
         <Button onClick={onAskQuestion}>
-          <AskIcon
-            style={{
-              width: '20px',
-              height: '20px',
-              marginRight: '8px',
+          <Box
+            component="img"
+            src={feedsNewsImageMap.askIcon}
+            sx={{
+              width: '12px',
+              height: '12px',
+              marginRight: '4px',
             }}
           />
           {t('Ask')}

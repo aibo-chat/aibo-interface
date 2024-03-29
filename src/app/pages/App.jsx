@@ -37,6 +37,7 @@ function App() {
         <AppGlobalStyles>
           <SnackbarProvider
             maxSnack={5}
+            autoHideDuration={2000}
             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             iconVariant={{
               success: <CheckCircle />,

@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import './RoomViewHeader.scss'
 import { Box } from '@mui/material'
+import { observer } from 'mobx-react-lite'
 import { twemojify } from '../../../util/twemojify'
 import { blurOnBubbling } from '../../atoms/button/script'
 import initMatrix from '../../../client/initMatrix'
@@ -13,14 +14,25 @@ import Avatar from '../../atoms/avatar/Avatar'
 import { useForceUpdate } from '../../hooks/useForceUpdate'
 import CommonConditionDisplay from '../../components/common/CommonConditionDisplay'
 import WalletHeader from '../../components/aptos/WalletHeader'
+import { useMobxStore } from '../../../stores/StoreProvider'
 
-function RoomViewHeader({ roomId }) {
+const RoomViewHeader = ({ roomId }) => {
+  const {
+    aiStore: { botUserIdToRoomId, botList },
+  } = useMobxStore()
   const [, forceUpdate] = useForceUpdate()
   const mx = initMatrix.matrixClient
   const isDM = initMatrix.roomList.directs.has(roomId)
   const room = mx.getRoom(roomId)
   let avatarSrc = room.getAvatarUrl(mx.baseUrl, 36, 36, 'crop')
   avatarSrc = isDM ? room.getAvatarFallbackMember()?.getAvatarUrl(mx.baseUrl, 36, 36, 'crop') : avatarSrc
+  if (!avatarSrc) {
+    const findRoomBotRoom = botUserIdToRoomId.find((item) => item.roomId === roomId)
+    if (findRoomBotRoom) {
+      const bot = botList.find((item) => item.user_id === findRoomBotRoom.userId)
+      avatarSrc = bot.avatar_url
+    }
+  }
   const roomName = room.name
   const roomConditions = room?.currentState.getStateEvents('m.room.condition')[0]?.getContent().room_conditions
 
@@ -99,4 +111,4 @@ RoomViewHeader.propTypes = {
   roomId: PropTypes.string.isRequired,
 }
 
-export default RoomViewHeader
+export default observer(RoomViewHeader)

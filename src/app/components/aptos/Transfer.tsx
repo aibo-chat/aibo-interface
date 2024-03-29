@@ -83,7 +83,7 @@ export const AptosTransfer: React.FC<IAptosTransferProps> = ({ aiTokenSymbol, ai
   }
 
   const handleNext = () => {
-    //检查钱包是否连接
+    // 检查钱包是否连接
     if (!connected) {
       connectPetraWallet()
       return
@@ -111,7 +111,6 @@ export const AptosTransfer: React.FC<IAptosTransferProps> = ({ aiTokenSymbol, ai
   }
 
   // 确认转账
-  const [txHash, setTxHash] = useState('')
   const handleConfirm = async () => {
     if (!toAddress || !sendAmount) return
     // sendAmount + 精度
@@ -127,7 +126,6 @@ export const AptosTransfer: React.FC<IAptosTransferProps> = ({ aiTokenSymbol, ai
       // console.log(result)
       // 刷新余额
       getCoinBalance()
-      setTxHash(result.hash)
       if (updateMessage) {
         await updateMessage({
           result: {

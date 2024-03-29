@@ -2,6 +2,9 @@ import { useMemo } from 'react'
 import rawTokenListJson from './pancakeToken.json'
 import { useTransaction } from './useTransaction'
 import { valueToBigNumber } from '../../utils/math-utils-v2'
+import { getRouter } from '../../../api/aptos';
+import { InputTransactionData, useWallet } from '@aptos-labs/wallet-adapter-react';
+import { aptosClient } from './utils';
 
 export interface IConvertTokenList {
   balance: number;
@@ -13,6 +16,15 @@ export interface IConvertTokenList {
   logoURI: string;
 }
 
+export interface IEstimateParams {
+  fromToken: string
+  toToken: string
+  byAmountIn: boolean
+  amount: string
+  allowMultiHops: boolean
+  allowSplit: boolean
+}
+
 const rawTokenList = rawTokenListJson.sort((a, b) => a.symbol.localeCompare(b.symbol)).map((item) => {
   return {
     ...item,
@@ -22,6 +34,7 @@ const rawTokenList = rawTokenListJson.sort((a, b) => a.symbol.localeCompare(b.sy
 
 export function useConvert() {
   const { userAsset } = useTransaction()
+  const { signAndSubmitTransaction, account, network } = useWallet()
 
   const convertTokenList: IConvertTokenList[] = useMemo(() => {
     if (!userAsset || userAsset.length === 0) return rawTokenList
@@ -39,9 +52,28 @@ export function useConvert() {
     return tokenListSortBySymbol.filter((item) => item.balance).concat(tokenListSortBySymbol.filter((item) => !item.balance))
   }, [userAsset])
 
-  // console.log('convertTokenList', convertTokenList)
+  const estimateToAmount = async (params: IEstimateParams) => {
+    const result = await getRouter(params)
+    return result
+  }
+
+  const signConvertTx = async (transaction: InputTransactionData) => {
+    if (!account || !network) return
+
+    try {
+      const response = await signAndSubmitTransaction(transaction);
+      //开始 Pending
+      await aptosClient(network.name.toLowerCase()).waitForTransaction({ transactionHash: response.hash });
+      //交易成功 => 返回交易的结果
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   return {
-    convertTokenList
+    convertTokenList,
+    estimateToAmount,
+    signConvertTx
   }
 }

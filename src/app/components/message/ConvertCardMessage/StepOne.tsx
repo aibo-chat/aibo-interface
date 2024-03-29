@@ -71,6 +71,7 @@ const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelec
           >
             {tokenList?.map((token, index) => (
               <ButtonBase
+                key={token.address}
                 sx={{
                   width: '100%',
                   height: '28px',
@@ -153,7 +154,7 @@ const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelec
                   flex: 1,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  fontSize: '20px',
+                  fontSize: '18px',
                   fontWeight: 500,
                   lineHeight: '24px',
                   color: '#23282D',
@@ -471,6 +472,7 @@ const StepOne: React.FC<IStepOneProps> = ({ fromToken, fromAmount, setFromAmount
           >
             {route?.map((singleRoute, index) => (
               <Box
+                key={index}
                 component="span"
                 sx={{
                   marginRight: index === route.length - 1 ? 0 : '4px',

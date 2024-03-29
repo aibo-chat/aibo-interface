@@ -14,6 +14,7 @@ interface IAiTransferMessageProps {
   mEvent: MatrixEvent
   timelineSet: EventTimelineSet
 }
+
 export interface CommonTransferMessageContent {
   amount: string
   target: string
@@ -31,6 +32,7 @@ export interface CommonTransferMessageContent {
     networkName: string
   }
 }
+
 const CommonTransferMessage: React.FC<IAiTransferMessageProps> = ({ timelineSet, mEvent, mEventId }) => {
   const mx = useMatrixClient() as MatrixClient
   const [messageBody] = useMessageContent<CommonTransferMessageContent>(mEventId, mEvent, timelineSet)
@@ -64,6 +66,7 @@ const CommonTransferMessage: React.FC<IAiTransferMessageProps> = ({ timelineSet,
       console.error(e)
     }
   }
+
   return debouncedInitDone ? (
     <Box
       sx={{
@@ -91,7 +94,12 @@ const CommonTransferMessage: React.FC<IAiTransferMessageProps> = ({ timelineSet,
           networkName={messageBody.result.networkName}
         />
       ) : (
-        <AptosTransfer aiInputAmount={messageBody.amount} aiTokenSymbol={messageBody.symbol} updateMessage={updateMessage} />
+        <AptosTransfer
+          aiInputAmount={messageBody.amount}
+          aiTokenSymbol={messageBody.symbol}
+          aiToAddress={messageBody.target}
+          updateMessage={updateMessage}
+        />
       )}
     </Box>
   ) : (

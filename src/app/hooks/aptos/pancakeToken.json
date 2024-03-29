@@ -93,7 +93,7 @@
     "chainId": 1,
     "decimals": 6,
     "address": "0xe4ccb6d39136469f376242c31b34d10515c8eaaa38092f804db8e08a8f53c5b2::assets_v1::EchoCoin002",
-    "logoURI": "https://tokens.pancakeswap.finance/images/aptos/0xe4ccb6d39136469f376242c31b34d10515c8eaaa38092f804db8e08a8f53c5b2::assets_v1::EchoCoin002"
+    "logoURI": "https://tokens.pancakeswap.finance/images/aptos/0xe4ccb6d39136469f376242c31b34d10515c8eaaa38092f804db8e08a8f53c5b2::assets_v1::EchoCoin002.png"
   },
   {
     "name": "LayerZero - USD Coin",
@@ -157,7 +157,7 @@
     "chainId": 1,
     "decimals": 8,
     "address": "0x111ae3e5bc816a5e63c2da97d0aa3886519e0cd5e4b046659fa35796bd11542a::stapt_token::StakedApt",
-    "logoURI": "https://tokens.pancakeswap.finance/images/aptos/0x111ae3e5bc816a5e63c2da97d0aa3886519e0cd5e4b046659fa35796bd11542a::stapt_token::StakedApt"
+    "logoURI": "https://tokens.pancakeswap.finance/images/aptos/0x111ae3e5bc816a5e63c2da97d0aa3886519e0cd5e4b046659fa35796bd11542a::stapt_token::StakedApt.png"
   },
   {
     "name": "Tortuga Staked APT",

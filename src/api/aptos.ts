@@ -3,7 +3,8 @@ import snackbarUtils from '../util/SnackbarUtils'
 import { IEstimateParams } from '../app/hooks/aptos/useConvert'
 
 const request = axios.create({
-  baseURL: 'https://aggregator.aibo.chat',
+  baseURL: 'http://8.219.172.120:1107',
+  // baseURL: 'https://aggregator.aibo.chat',
   timeout: 60000,
 })
 

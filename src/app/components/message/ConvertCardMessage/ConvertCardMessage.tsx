@@ -67,6 +67,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       to_token: toToken.address,
       amount: valueToBigNumber(fromAmount).shiftedBy(fromToken.decimals).toFixed(0, 1)
     })
+
     const data = new BigNumber(fromAmount || 0).times(1.5).toString()
     setToAmount(data)
   }, [fromAmount, fromToken?.address, toToken?.address], {

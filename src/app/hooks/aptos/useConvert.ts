@@ -3,9 +3,16 @@ import rawTokenListJson from './pancakeToken.json'
 import { useTransaction } from './useTransaction'
 import { valueToBigNumber } from '../../utils/math-utils-v2'
 import { getRouter } from '../../../api/aptos';
-import { InputTransactionData, useWallet } from '@aptos-labs/wallet-adapter-react';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { aptosClient } from './utils';
 import CryptoJS from 'crypto-js'
+
+type TxPayloadCallFunction = {
+  type: 'entry_function_payload';
+  function: string;
+  type_arguments: string[];
+  arguments: string[];
+};
 
 export interface IConvertTokenList {
   balance: number;
@@ -94,10 +101,11 @@ export function useConvert() {
     // return result
   }
 
-  const signConvertTx = async (transaction: InputTransactionData) => {
+  const signConvertTx = async (transaction: TxPayloadCallFunction) => {
     if (!account || !network) return
 
     try {
+      //@ts-ignore
       const response = await signAndSubmitTransaction(transaction);
       //开始 Pending
       await aptosClient(network.name.toLowerCase()).waitForTransaction({ transactionHash: response.hash });

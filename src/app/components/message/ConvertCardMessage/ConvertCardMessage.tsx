@@ -191,7 +191,6 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
               allowTouchMove={false}
               initialSlide={0}
               onSwiper={(swiper: SwiperClass) => {
-                // @ts-ignore
                 swiperRef.current = swiper
               }}
               onSlideChange={handleSlideChange}

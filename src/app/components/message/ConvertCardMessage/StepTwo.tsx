@@ -13,9 +13,10 @@ interface IStepTwoProps {
   exchangeRate: string
   feeAmount: string
   feeSymbol: string
+  toAmountLimit: string
 }
 
-const StepTwo: React.FC<IStepTwoProps> = ({ fromToken, fromAmount, toToken, toAmount, exchangeRate, feeAmount, feeSymbol }) => (
+const StepTwo: React.FC<IStepTwoProps> = ({ fromToken, fromAmount, toToken, toAmount, exchangeRate, feeAmount, feeSymbol, toAmountLimit }) => (
   <Box
     sx={{
       width: '100%',
@@ -108,7 +109,7 @@ const StepTwo: React.FC<IStepTwoProps> = ({ fromToken, fromAmount, toToken, toAm
           color: '#23282D',
         }}
       >
-        {new BigNumber(toAmount).toFormat(4)}
+        {new BigNumber(toAmount).toString()}
       </Box>
       <Box
         sx={{
@@ -232,7 +233,7 @@ const StepTwo: React.FC<IStepTwoProps> = ({ fromToken, fromAmount, toToken, toAm
                 marginRight: '2px',
               }}
             >
-              {new BigNumber(feeAmount).toFormat(4)}
+              {new BigNumber(feeAmount).toString()}
             </Box>
             <Box component="span">{feeSymbol}</Box>
           </>
@@ -272,7 +273,7 @@ const StepTwo: React.FC<IStepTwoProps> = ({ fromToken, fromAmount, toToken, toAm
                   marginRight: '2px',
                 }}
               >
-                {toAmount}
+                {toAmountLimit}
               </Box>
               <Box component="span">{toToken.symbol}</Box>
             </>

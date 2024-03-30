@@ -53,6 +53,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
   const [toToken, setToToken] = useState<IConvertTokenList>()
   const [fromAmount, setFromAmount] = useState<string>('')
   const [toAmount, setToAmount] = useState('')
+  const [toAmountLimit, setAmountLimit] = useState('')
 
   const { convertTokenList, estimateToAmount, signConvertTx } = useConvert()
   const [txPayload, setTxPayload] = useState<TxPayloadCallFunction>()
@@ -71,8 +72,10 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
     }).then((data: any) => {
       if (data.status === 200) {
         const nomalAmount = valueToBigNumber(data.data.amount_out).shiftedBy(-toToken.decimals).toString()
+        const amountLimit = valueToBigNumber(data.data.amount_limit).shiftedBy(-toToken.decimals).toString()
         setToAmount(nomalAmount)
         setTxPayload(data.data.tx_payload)
+        setAmountLimit(amountLimit)
       }
     })
   }, [fromAmount, fromToken?.address, toToken?.address], {
@@ -171,10 +174,16 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
 
     try {
       signConvertTx(txPayload).then(async (response) => {
+        const depositEvent = response.output.events.find((event: any) => {
+          return event.type === "0x1::coin::DepositEvent"
+        })
+
+        const receive = valueToBigNumber(depositEvent?.data.amount || 0).shiftedBy(-toToken!.decimals).toString()
+
         const result: ConvertCardResultData = {
           from_amount: fromAmount,
           from_symbol: fromToken!.symbol,
-          to_amount: toAmount,
+          to_amount: receive,
           to_symbol: toToken!.symbol,
           tx_hash: response.hash,
           network_name: network?.name as string,
@@ -302,7 +311,16 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
                   height: swiperIndex === 1 ? 'auto' : '0px',
                 }}
               >
-                <StepTwo fromToken={fromToken} toToken={toToken} fromAmount={fromAmount} toAmount={toAmount} exchangeRate={exchangeRate} feeAmount={feeAmount} feeSymbol={feeSymbol} />
+                <StepTwo
+                  toAmountLimit={toAmountLimit}
+                  fromToken={fromToken}
+                  toToken={toToken}
+                  fromAmount={fromAmount}
+                  toAmount={toAmount}
+                  exchangeRate={exchangeRate}
+                  feeAmount={feeAmount}
+                  feeSymbol={feeSymbol}
+                />
               </SwiperSlide>
             </Swiper>
             <Box

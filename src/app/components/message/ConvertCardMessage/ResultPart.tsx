@@ -139,7 +139,7 @@ const ResultPart: React.FC<IResultPartProps> = ({ orderDetail }) => (
               marginRight: '2px',
             }}
           >
-            {new BigNumber(orderDetail?.transaction_fee_amount).toFormat(4)}
+            {new BigNumber(orderDetail?.transaction_fee_amount).toString()}
           </Box>
           <Box component="span">{orderDetail?.transaction_fee_symbol}</Box>
         </Box>
@@ -153,7 +153,7 @@ const ResultPart: React.FC<IResultPartProps> = ({ orderDetail }) => (
               marginRight: '2px',
             }}
           >
-            {new BigNumber(orderDetail?.to_amount).toFormat(4)}
+            {new BigNumber(orderDetail?.to_amount).toString()}
           </Box>
           <Box component="span">{orderDetail?.to_symbol}</Box>
         </Box>

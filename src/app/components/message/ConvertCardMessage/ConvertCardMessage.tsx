@@ -39,6 +39,7 @@ interface ConvertCardMessageContent {
     tx_hash: string
   }
 }
+
 const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, mEventId, mEvent }) => {
 
   const [messageBody] = useMessageContent<ConvertCardMessageContent>(mEventId, mEvent, timelineSet)
@@ -50,8 +51,6 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
   const [toToken, setToToken] = useState<IConvertTokenList>()
   const [fromAmount, setFromAmount] = useState<string>('0')
 
-  // const toAmount = useMemo(() => new BigNumber(fromAmount || 0).times(1.2).toFormat(4), [fromAmount])
-
   const [toAmount, setToAmount] = useState('')
 
   useEffect(() => {
@@ -59,7 +58,8 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       setToAmount('')
       return
     }
-    const data = new BigNumber(fromAmount || 0).times(1.5).toFormat(4)
+    //根据 fromAmount 调接口计算 toAmount
+    const data = new BigNumber(fromAmount || 0).times(1.5).toString()
     setToAmount(data)
   }, [fromAmount])
 
@@ -81,7 +81,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
     if (messageBody) {
       let fromToken = fromTokenList[0]
       if (messageBody?.from_symbol) {
-        const findFromToken = fromTokenList.find((token) => token.symbol?.toUpperCase() === messageBody.from_symbol.toUpperCase())
+        const findFromToken = fromTokenList.find((token) => token.symbol.toLowerCase().includes(messageBody.from_symbol.toLowerCase()))
         if (findFromToken) {
           fromToken = findFromToken
         }
@@ -89,7 +89,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       setFromToken(fromToken)
       let toToken = fromTokenList[1]
       if (messageBody?.to_symbol) {
-        const findToToken = toTokenList.find((token) => token.symbol === messageBody.to_symbol)
+        const findToToken = toTokenList.find((token) => token.symbol.toLowerCase().includes(messageBody.to_symbol.toLowerCase()))
         if (findToToken) {
           toToken = findToToken
         }

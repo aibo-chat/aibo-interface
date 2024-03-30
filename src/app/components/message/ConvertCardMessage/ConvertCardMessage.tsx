@@ -119,7 +119,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
     if (!fromToken || !toToken || !Number(fromAmount) || !Number(toAmount)) return
     //检查 fromToken 的余额是否足够
     if (valueToBigNumber(fromAmount).gt(fromToken.balance)) {
-      // 转账的数量大于了余额
+      // 输入的数量大于了账户对应的 token 余额
       snackbarUtils.error('The amount exceeds your balance')
       return
     }
@@ -135,6 +135,8 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
 
   const confirmCurrentTx = () => {
     console.log('对交易信息进行签名')
+
+    //签名交易完成之后，更新消息
   }
 
   const goPrev = () => {

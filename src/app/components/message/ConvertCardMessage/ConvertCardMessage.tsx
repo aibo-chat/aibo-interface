@@ -50,7 +50,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       setToAmount('')
       return
     }
-    //根据 fromAmount 调接口计算 toAmount
+    // 根据 fromAmount 调接口计算 toAmount
     const data = new BigNumber(fromAmount || 0).times(1.5).toString()
     setToAmount(data)
   }, [fromAmount])
@@ -103,8 +103,8 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       fromToken,
       toToken,
       fromAmount,
-      toAmount
-    });
+      toAmount,
+    })
     swiperRef.current.slideNext()
   }
 

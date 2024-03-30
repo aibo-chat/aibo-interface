@@ -550,7 +550,8 @@ export const Message = as<'div', MessageProps>(
         space={messageSpacing}
         collapse={collapse}
         highlight={highlight}
-        selected={menu || emojiBoard}
+        // selected={menu || emojiBoard}
+        selected={false}
         {...props}
         {...hoverProps}
         {...focusWithinProps}

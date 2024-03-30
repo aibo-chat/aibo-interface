@@ -98,7 +98,7 @@ const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelec
                     flex: 1,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    fontSize: '16px',
+                    fontSize: '14px',
                     fontWeight: 500,
                     lineHeight: '24px',
                     color: '#23282D',
@@ -190,11 +190,12 @@ const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelec
   )
 }
 const StepOne: React.FC<IStepOneProps> = ({ fromToken, fromAmount, setFromAmount, fromTokenList, setFromToken, toToken, toAmount, toTokenList, setToToken, exchangeRate, route }) => {
+
   const exChangeToken = () => {
-    setFromAmount('0')
     setFromToken(toToken)
     setToToken(fromToken)
   }
+
   return (
     <Box
       sx={{

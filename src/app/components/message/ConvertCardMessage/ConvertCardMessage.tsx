@@ -32,6 +32,7 @@ interface ConvertCardMessageContent {
   original_answer?: { action: string; fromAmount: string; fromNetwork: string; fromToken: string; price: string; toAmount: string; toNetwork: string; toToken: string }
   order_detail?: ConvertCardResultData
 }
+
 const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, mEventId, mEvent }) => {
   const [messageBody] = useMessageContent<ConvertCardMessageContent>(mEventId, mEvent, timelineSet)
   const [initDone, setInitDone] = useState<boolean>(false)
@@ -42,8 +43,6 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
   const [toToken, setToToken] = useState<IConvertTokenList>()
   const [fromAmount, setFromAmount] = useState<string>('0')
 
-  // const toAmount = useMemo(() => new BigNumber(fromAmount || 0).times(1.2).toFormat(4), [fromAmount])
-
   const [toAmount, setToAmount] = useState('')
 
   useEffect(() => {
@@ -51,7 +50,8 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       setToAmount('')
       return
     }
-    const data = new BigNumber(fromAmount || 0).times(1.5).toFormat(4)
+    //根据 fromAmount 调接口计算 toAmount
+    const data = new BigNumber(fromAmount || 0).times(1.5).toString()
     setToAmount(data)
   }, [fromAmount])
 
@@ -72,7 +72,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
     if (messageBody) {
       let fromToken = convertTokenList[0]
       if (messageBody?.from_symbol) {
-        const findFromToken = convertTokenList.find((token) => token.symbol?.toUpperCase() === messageBody.from_symbol.toUpperCase())
+        const findFromToken = convertTokenList.find((token) => token.symbol.toLowerCase().includes(messageBody?.from_symbol?.toLowerCase()))
         if (findFromToken) {
           fromToken = findFromToken
         }
@@ -80,7 +80,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       setFromToken(fromToken)
       let toToken = convertTokenList[1]
       if (messageBody?.to_symbol) {
-        const findToToken = convertTokenList.find((token) => token.symbol === messageBody.to_symbol)
+        const findToToken = convertTokenList.find((token) => token.symbol.toLowerCase().includes(messageBody?.to_symbol?.toLowerCase()))
         if (findToToken) {
           toToken = findToToken
         }
@@ -103,8 +103,8 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       fromToken,
       toToken,
       fromAmount,
-      toAmount,
-    })
+      toAmount
+    });
     swiperRef.current.slideNext()
   }
 

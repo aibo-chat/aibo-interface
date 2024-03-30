@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react-lite'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { EventTimelineSet, MatrixEvent } from 'matrix-js-sdk'
 import { Box, Button, Skeleton } from '@mui/material'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Swiper as SwiperClass } from 'swiper/types'
-import { useDebounce, useIsomorphicLayoutEffect } from 'ahooks'
+import { useDebounce, useDebounceEffect, useIsomorphicLayoutEffect } from 'ahooks'
 import { BigNumber } from 'bignumber.js'
 import { useMessageContent } from '../../../hooks/useMessageContent'
 import ResultPart, { ConvertCardResultData } from './ResultPart'
@@ -12,6 +12,10 @@ import StepOne from './StepOne'
 import StepTwo from './StepTwo'
 import ConvertCardMessageLogo from '../../../../../public/res/svg/transfer/convert_card_message_logo.svg?react'
 import { IConvertTokenList, useConvert } from '../../../hooks/aptos/useConvert'
+import { valueToBigNumber } from '../../../utils/math-utils-v2'
+import { useWallet } from '@aptos-labs/wallet-adapter-react'
+import { useConnectPetra } from '../../../hooks/aptos/useConnectPetra'
+import snackbarUtils from '../../../../util/SnackbarUtils'
 
 interface IConvertCardMessageProps {
   mEventId: string
@@ -34,35 +38,45 @@ interface ConvertCardMessageContent {
 }
 
 const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, mEventId, mEvent }) => {
+
+  const { connected } = useWallet()
+  const { connectPetraWallet } = useConnectPetra()
+
   const [messageBody] = useMessageContent<ConvertCardMessageContent>(mEventId, mEvent, timelineSet)
   const [initDone, setInitDone] = useState<boolean>(false)
   const debouncedInitDone = useDebounce(initDone, { wait: 500 })
   const swiperRef = useRef<SwiperClass>(null)
   const [swiperIndex, setSwiperIndex] = useState<number>(0)
+
   const [fromToken, setFromToken] = useState<IConvertTokenList>()
   const [toToken, setToToken] = useState<IConvertTokenList>()
-  const [fromAmount, setFromAmount] = useState<string>('0')
-
+  const [fromAmount, setFromAmount] = useState<string>('')
   const [toAmount, setToAmount] = useState('')
 
-  useEffect(() => {
-    if (!fromAmount) {
+  const { convertTokenList, estimateToAmount } = useConvert()
+
+  useDebounceEffect(() => {
+    if (!fromToken?.address || !toToken?.address) return
+    if (!Number(fromAmount)) {
       setToAmount('')
       return
     }
-    // 根据 fromAmount 调接口计算 toAmount
+    //根据 fromAmount 调接口计算 toAmount
+    estimateToAmount({
+      from_token: fromToken.address,
+      to_token: toToken.address,
+      amount: valueToBigNumber(fromAmount).shiftedBy(fromToken.decimals).toFixed(0, 1)
+    })
     const data = new BigNumber(fromAmount || 0).times(1.5).toString()
     setToAmount(data)
-  }, [fromAmount])
+  }, [fromAmount, fromToken?.address, toToken?.address], {
+    wait: 300
+  })
 
   const exchangeRate = useMemo(() => (fromAmount && toAmount && !new BigNumber(fromAmount).isZero() ? new BigNumber(toAmount).div(fromAmount).toFormat(4) : '0'), [fromAmount, toAmount])
-
   const route = useMemo(() => [fromToken?.symbol, toToken?.symbol], [fromToken?.symbol, toToken?.symbol])
-
   const feeAmount = useMemo(() => new BigNumber(fromAmount || 0).times(0.01).toFormat(4), [fromAmount])
   const feeSymbol = useMemo(() => fromToken?.symbol || '', [fromToken])
-
-  const { convertTokenList } = useConvert()
 
   const handleSlideChange = (swiper: SwiperClass) => {
     setSwiperIndex(swiper.activeIndex)
@@ -97,7 +111,18 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
 
   const goNext = () => {
     if (!swiperRef.current) return
+    // 检查钱包是否连接
+    if (!connected) {
+      connectPetraWallet()
+      return
+    }
     if (!fromToken || !toToken || !Number(fromAmount) || !Number(toAmount)) return
+    //检查 fromToken 的余额是否足够
+    if (valueToBigNumber(fromAmount).gt(fromToken.balance)) {
+      // 转账的数量大于了余额
+      snackbarUtils.error('The amount exceeds your balance')
+      return
+    }
 
     console.log('params', {
       fromToken,
@@ -127,7 +152,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
     } else {
       setFromToken(targetFromToken)
     }
-    setFromAmount('0')
+    // setFromAmount('0')
   }
 
   const onToTokenChange = (targetToToken?: IConvertTokenList) => {
@@ -140,7 +165,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
     } else {
       setToToken(targetToToken)
     }
-    setFromAmount('0')
+    // setFromAmount('0')
   }
 
   return (
@@ -191,6 +216,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
               allowTouchMove={false}
               initialSlide={0}
               onSwiper={(swiper: SwiperClass) => {
+                //@ts-ignore
                 swiperRef.current = swiper
               }}
               onSlideChange={handleSlideChange}
@@ -220,7 +246,15 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
                   height: swiperIndex === 1 ? 'auto' : '0px',
                 }}
               >
-                <StepTwo fromToken={fromToken} toToken={toToken} fromAmount={fromAmount} toAmount={toAmount} exchangeRate={exchangeRate} feeAmount={feeAmount} feeSymbol={feeSymbol} />
+                <StepTwo
+                  fromToken={fromToken}
+                  toToken={toToken}
+                  fromAmount={fromAmount}
+                  toAmount={toAmount}
+                  exchangeRate={exchangeRate}
+                  feeAmount={feeAmount}
+                  feeSymbol={feeSymbol}
+                />
               </SwiperSlide>
             </Swiper>
             <Box

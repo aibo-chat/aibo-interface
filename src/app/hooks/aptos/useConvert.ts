@@ -5,6 +5,7 @@ import { valueToBigNumber } from '../../utils/math-utils-v2'
 import { getRouter } from '../../../api/aptos';
 import { InputTransactionData, useWallet } from '@aptos-labs/wallet-adapter-react';
 import { aptosClient } from './utils';
+import CryptoJS from 'crypto-js'
 
 export interface IConvertTokenList {
   balance: number;
@@ -16,13 +17,18 @@ export interface IConvertTokenList {
   logoURI: string;
 }
 
-export interface IEstimateParams {
-  fromToken: string
-  toToken: string
-  byAmountIn: boolean
+interface IBaiceEstimateParams {
+  from_token: string
+  to_token: string
   amount: string
-  allowMultiHops: boolean
-  allowSplit: boolean
+  by_amount_in?: boolean
+  slippage?: number
+  allow_split?: boolean
+}
+
+export interface IEstimateParams extends IBaiceEstimateParams {
+  sender_address: string
+  request_id: string
 }
 
 const rawTokenList = rawTokenListJson.sort((a, b) => a.symbol.localeCompare(b.symbol)).map((item) => {
@@ -52,9 +58,40 @@ export function useConvert() {
     return tokenListSortBySymbol.filter((item) => item.balance).concat(tokenListSortBySymbol.filter((item) => !item.balance))
   }, [userAsset])
 
-  const estimateToAmount = async (params: IEstimateParams) => {
-    const result = await getRouter(params)
-    return result
+  const estimateToAmount = async ({
+    from_token,
+    to_token,
+    amount,
+    allow_split = true,
+    by_amount_in = true,
+    slippage = 50,
+  }: IBaiceEstimateParams) => {
+
+    const sender_address = account?.publicKey as string || ''
+    const request_id = CryptoJS.SHA256(sender_address + Date.now()).toString()
+
+    console.log({
+      from_token,
+      to_token,
+      amount,
+      sender_address,
+      request_id,
+      slippage,
+      by_amount_in,
+      allow_split
+    })
+
+    // const result = await getRouter({
+    //   from_token,
+    //   to_token,
+    //   amount,
+    //   allow_split,
+    //   by_amount_in,
+    //   slippage,
+    //   sender_address,
+    //   request_id
+    // })
+    // return result
   }
 
   const signConvertTx = async (transaction: InputTransactionData) => {

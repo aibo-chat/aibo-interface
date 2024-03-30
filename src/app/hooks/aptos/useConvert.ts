@@ -3,13 +3,13 @@ import rawTokenListJson from './pancakeToken.json'
 import { useTransaction } from './useTransaction'
 import { valueToBigNumber } from '../../utils/math-utils-v2'
 import { getRouter } from '../../../api/aptos';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { InputTransactionData, useWallet } from '@aptos-labs/wallet-adapter-react';
 import { aptosClient } from './utils';
 import CryptoJS from 'crypto-js'
 
-type TxPayloadCallFunction = {
-  type: 'entry_function_payload';
-  function: string;
+export interface TxPayloadCallFunction {
+  // type: 'entry_function_payload';
+  function_name: string;
   type_arguments: string[];
   arguments: string[];
 };
@@ -46,7 +46,7 @@ const rawTokenList = rawTokenListJson.sort((a, b) => a.symbol.localeCompare(b.sy
 })
 
 export function useConvert() {
-  const { userAsset } = useTransaction()
+  const { userAsset, getCoinBalance } = useTransaction()
   const { signAndSubmitTransaction, account, network } = useWallet()
 
   const convertTokenList: IConvertTokenList[] = useMemo(() => {
@@ -77,39 +77,41 @@ export function useConvert() {
     const sender_address = account?.publicKey as string || ''
     const request_id = CryptoJS.SHA256(sender_address + Date.now()).toString()
 
-    console.log({
+    const result = await getRouter({
       from_token,
       to_token,
       amount,
-      sender_address,
-      request_id,
-      slippage,
+      allow_split,
       by_amount_in,
-      allow_split
+      slippage,
+      sender_address,
+      request_id
     })
-
-    // const result = await getRouter({
-    //   from_token,
-    //   to_token,
-    //   amount,
-    //   allow_split,
-    //   by_amount_in,
-    //   slippage,
-    //   sender_address,
-    //   request_id
-    // })
-    // return result
+    return result
   }
 
   const signConvertTx = async (transaction: TxPayloadCallFunction) => {
     if (!account || !network) return
 
+    console.log('transaction', transaction)
+
+    const { function_name, type_arguments } = transaction
+
+    const tx: InputTransactionData = {
+      data: {
+        function: function_name as '`${string}::${string}::${string}`',
+        typeArguments: type_arguments,
+        functionArguments: transaction.arguments,
+      },
+    };
+
     try {
       //@ts-ignore
-      const response = await signAndSubmitTransaction(transaction);
+      const response = await signAndSubmitTransaction(tx);
       //开始 Pending
       await aptosClient(network.name.toLowerCase()).waitForTransaction({ transactionHash: response.hash });
-      //交易成功 => 返回交易的结果
+      //交易成功 => 刷新账户余额，返回交易的结果
+      getCoinBalance()
       return response;
     } catch (error) {
       throw error;

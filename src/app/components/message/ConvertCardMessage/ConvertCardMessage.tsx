@@ -12,7 +12,7 @@ import ResultPart, { ConvertCardResultData } from './ResultPart'
 import StepOne from './StepOne'
 import StepTwo from './StepTwo'
 import ConvertCardMessageLogo from '../../../../../public/res/svg/transfer/convert_card_message_logo.svg?react'
-import { IConvertTokenList, useConvert } from '../../../hooks/aptos/useConvert'
+import { IConvertTokenList, TxPayloadCallFunction, useConvert } from '../../../hooks/aptos/useConvert'
 import { valueToBigNumber } from '../../../utils/math-utils-v2'
 import { useConnectPetra } from '../../../hooks/aptos/useConnectPetra'
 import snackbarUtils from '../../../../util/SnackbarUtils'
@@ -40,7 +40,7 @@ interface ConvertCardMessageContent {
 }
 
 const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, mEventId, mEvent }) => {
-  const { connected } = useWallet()
+  const { connected, network } = useWallet()
   const { connectPetraWallet } = useConnectPetra()
   const mx = useMatrixClient()
   const [messageBody] = useMessageContent<ConvertCardMessageContent>(mEventId, mEvent, timelineSet)
@@ -54,7 +54,8 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
   const [fromAmount, setFromAmount] = useState<string>('')
   const [toAmount, setToAmount] = useState('')
 
-  const { convertTokenList, estimateToAmount } = useConvert()
+  const { convertTokenList, estimateToAmount, signConvertTx } = useConvert()
+  const [txPayload, setTxPayload] = useState<TxPayloadCallFunction>()
 
   useDebounceEffect(() => {
     if (!fromToken?.address || !toToken?.address) return
@@ -67,17 +68,25 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       from_token: fromToken.address,
       to_token: toToken.address,
       amount: valueToBigNumber(fromAmount).shiftedBy(fromToken.decimals).toFixed(0, 1)
+    }).then((data: any) => {
+      if (data.status === 200) {
+        const nomalAmount = valueToBigNumber(data.data.amount_out).shiftedBy(-toToken.decimals).toString()
+        setToAmount(nomalAmount)
+        setTxPayload(data.data.tx_payload)
+      }
     })
-
-    const data = new BigNumber(fromAmount || 0).times(1.5).toString()
-    setToAmount(data)
   }, [fromAmount, fromToken?.address, toToken?.address], {
     wait: 300
   })
 
-  const exchangeRate = useMemo(() => (fromAmount && toAmount && !new BigNumber(fromAmount).isZero() ? new BigNumber(toAmount).div(fromAmount).toFormat(4) : '0'), [fromAmount, toAmount])
+  const exchangeRate = useMemo(() =>
+    (fromAmount && toAmount && !new BigNumber(fromAmount).isZero() ? new BigNumber(toAmount).div(fromAmount).toFormat(4) : ''),
+    [fromAmount, toAmount]
+  )
+
   const route = useMemo(() => [fromToken?.symbol, toToken?.symbol], [fromToken?.symbol, toToken?.symbol])
-  const feeAmount = useMemo(() => new BigNumber(fromAmount || 0).times(0.01).toFormat(4), [fromAmount])
+
+  const feeAmount = useMemo(() => new BigNumber(fromAmount || 0).times(0.0025).toString(), [fromAmount])
   const feeSymbol = useMemo(() => fromToken?.symbol || '', [fromToken])
 
   const handleSlideChange = (swiper: SwiperClass) => {
@@ -126,14 +135,9 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       return
     }
 
-    console.log('params', {
-      fromToken,
-      toToken,
-      fromAmount,
-      toAmount,
-    })
     swiperRef.current.slideNext()
   }
+
   const updateMessage = async (newContent: { [p in keyof ConvertCardMessageContent]?: ConvertCardMessageContent[p] }) => {
     if (!mx) return
     const finalNewContent = {
@@ -162,27 +166,26 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
   }
 
   const confirmCurrentTx = async () => {
+    if (!txPayload) return
     setButtonLoading(true)
+
     try {
-      const result: ConvertCardResultData = await new Promise((resolve) => {
-        setTimeout(() => {
-          const mockData: ConvertCardResultData = {
-            from_amount: '1000',
-            from_symbol: 'APT',
-            to_amount: '8',
-            to_symbol: 'USDC',
-            tx_hash: '0x1234567890',
-            network_name: 'ETH',
-            transaction_fee_amount: '0.001',
-            transaction_fee_symbol: 'APT',
-            exchange_rate: '125',
-          }
-          resolve(mockData)
-        }, 2000)
-      })
-      // 签名交易完成之后，更新消息
-      await updateMessage({
-        order_detail: result,
+      signConvertTx(txPayload).then(async (response) => {
+        const result: ConvertCardResultData = {
+          from_amount: fromAmount,
+          from_symbol: fromToken!.symbol,
+          to_amount: toAmount,
+          to_symbol: toToken!.symbol,
+          tx_hash: response.hash,
+          network_name: network?.name as string,
+          transaction_fee_amount: feeAmount,
+          transaction_fee_symbol: feeSymbol,
+          exchange_rate: exchangeRate,
+        }
+        // 签名交易完成之后，更新消息
+        await updateMessage({
+          order_detail: result,
+        })
       })
     } catch (e) {
       console.error('confirmCurrentTx Error', e)

@@ -391,98 +391,102 @@ const StepOne: React.FC<IStepOneProps> = ({ fromToken, fromAmount, setFromAmount
           <MySelect selectedToken={toToken} tokenList={toTokenList} setSelectedToken={setToToken} />
         </Box>
       </Box>
-      <Box
-        sx={{
-          width: '100%',
-          border: '1px solid #F0F5FA',
-          height: '72px',
-          borderRadius: '8px',
-          padding: '0 12px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          fontSize: '14px',
-          fontWeight: 400,
-          lineHeight: '20px',
-          color: '#78828C',
-        }}
-      >
+
+      {fromAmount && toAmount && (
         <Box
           sx={{
             width: '100%',
+            border: '1px solid #F0F5FA',
+            height: '72px',
+            borderRadius: '8px',
+            padding: '0 12px',
             display: 'flex',
-            alignItems: 'center',
-            height: '20px',
-            marginBottom: '10px',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            fontSize: '14px',
+            fontWeight: 400,
+            lineHeight: '20px',
+            color: '#78828C',
           }}
         >
-          {fromToken && toToken ? (
-            <>
-              <Box
-                component="span"
-                sx={{
-                  marginRight: '2px',
-                }}
-              >
-                {new BigNumber(exchangeRate).isZero() ? 0 : 1}
-              </Box>
-              <Box
-                component="span"
-                sx={{
-                  marginRight: '2px',
-                }}
-              >
-                {fromToken.symbol}
-              </Box>
-              <Box
-                component="span"
-                sx={{
-                  marginRight: '2px',
-                }}
-              >
-                =
-              </Box>
-              <Box
-                component="span"
-                sx={{
-                  marginRight: '2px',
-                }}
-              >
-                {exchangeRate}
-              </Box>
-              <Box component="span">{toToken.symbol}</Box>
-            </>
-          ) : null}
-        </Box>
-        <Box
-          sx={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Box>Route</Box>
           <Box
             sx={{
-              fontSize: '14px',
-              fontWeight: 500,
-              lineHeight: '24px',
-              color: '#23282D',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              height: '20px',
+              marginBottom: '10px',
             }}
           >
-            {route?.map((singleRoute, index) => (
-              <Box
-                key={index}
-                component="span"
-                sx={{
-                  marginRight: index === route.length - 1 ? 0 : '4px',
-                }}
-              >{`${singleRoute}${index === route.length - 1 ? '' : ' >'}`}</Box>
-            ))}
+            {fromToken && toToken ? (
+              <>
+                <Box
+                  component="span"
+                  sx={{
+                    marginRight: '2px',
+                  }}
+                >
+                  1
+                </Box>
+                <Box
+                  component="span"
+                  sx={{
+                    marginRight: '2px',
+                  }}
+                >
+                  {fromToken.symbol}
+                </Box>
+                <Box
+                  component="span"
+                  sx={{
+                    marginRight: '2px',
+                  }}
+                >
+                  =
+                </Box>
+                <Box
+                  component="span"
+                  sx={{
+                    marginRight: '2px',
+                  }}
+                >
+                  {exchangeRate}
+                </Box>
+                <Box component="span">{toToken.symbol}</Box>
+              </>
+            ) : null}
+          </Box>
+          <Box
+            sx={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Box>Route</Box>
+            <Box
+              sx={{
+                fontSize: '14px',
+                fontWeight: 500,
+                lineHeight: '24px',
+                color: '#23282D',
+              }}
+            >
+              {route?.map((singleRoute, index) => (
+                <Box
+                  key={index}
+                  component="span"
+                  sx={{
+                    marginRight: index === route.length - 1 ? 0 : '4px',
+                  }}
+                >{`${singleRoute}${index === route.length - 1 ? '' : ' >'}`}</Box>
+              ))}
+            </Box>
           </Box>
         </Box>
-      </Box>
+      )}
+
     </Box>
   )
 }

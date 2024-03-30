@@ -7,7 +7,7 @@ import type { Swiper as SwiperClass } from 'swiper/types'
 import { useDebounce, useIsomorphicLayoutEffect } from 'ahooks'
 import { BigNumber } from 'bignumber.js'
 import { useMessageContent } from '../../../hooks/useMessageContent'
-import ResultPart from './ResultPart'
+import ResultPart, { ConvertCardResultData } from './ResultPart'
 import StepOne from './StepOne'
 import StepTwo from './StepTwo'
 import ConvertCardMessageLogo from '../../../../../public/res/svg/transfer/convert_card_message_logo.svg?react'
@@ -30,17 +30,9 @@ interface ConvertCardMessageContent {
   to_network?: string
   order_type?: string
   original_answer?: { action: string; fromAmount: string; fromNetwork: string; fromToken: string; price: string; toAmount: string; toNetwork: string; toToken: string }
-  order_detail?: {
-    from_amount: string
-    from_symbol: string
-    to_amount: string
-    to_symbol: string
-    transaction_fee: string
-    tx_hash: string
-  }
+  order_detail?: ConvertCardResultData
 }
 const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, mEventId, mEvent }) => {
-
   const [messageBody] = useMessageContent<ConvertCardMessageContent>(mEventId, mEvent, timelineSet)
   const [initDone, setInitDone] = useState<boolean>(false)
   const debouncedInitDone = useDebounce(initDone, { wait: 500 })
@@ -67,11 +59,10 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
 
   const route = useMemo(() => [fromToken?.symbol, toToken?.symbol], [fromToken?.symbol, toToken?.symbol])
 
-  const fee = useMemo(() => new BigNumber(fromAmount || 0).times(0.01).toFormat(4), [fromAmount])
+  const feeAmount = useMemo(() => new BigNumber(fromAmount || 0).times(0.01).toFormat(4), [fromAmount])
+  const feeSymbol = useMemo(() => fromToken?.symbol || '', [fromToken])
 
-  const { convertTokenList: fromTokenList } = useConvert()
-
-  const toTokenList = useMemo(() => fromTokenList.filter((token) => token.address !== fromToken?.address), [fromToken?.address, fromTokenList])
+  const { convertTokenList } = useConvert()
 
   const handleSlideChange = (swiper: SwiperClass) => {
     setSwiperIndex(swiper.activeIndex)
@@ -79,17 +70,17 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
 
   const initData = () => {
     if (messageBody) {
-      let fromToken = fromTokenList[0]
+      let fromToken = convertTokenList[0]
       if (messageBody?.from_symbol) {
-        const findFromToken = fromTokenList.find((token) => token.symbol?.toUpperCase() === messageBody.from_symbol.toUpperCase())
+        const findFromToken = convertTokenList.find((token) => token.symbol?.toUpperCase() === messageBody.from_symbol.toUpperCase())
         if (findFromToken) {
           fromToken = findFromToken
         }
       }
       setFromToken(fromToken)
-      let toToken = fromTokenList[1]
+      let toToken = convertTokenList[1]
       if (messageBody?.to_symbol) {
-        const findToToken = toTokenList.find((token) => token.symbol === messageBody.to_symbol)
+        const findToToken = convertTokenList.find((token) => token.symbol === messageBody.to_symbol)
         if (findToToken) {
           toToken = findToToken
         }
@@ -102,7 +93,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
 
   useIsomorphicLayoutEffect(() => {
     initData()
-  }, [messageBody?.from_symbol, fromTokenList])
+  }, [messageBody?.from_symbol, convertTokenList])
 
   const goNext = () => {
     if (!swiperRef.current) return
@@ -112,8 +103,8 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       fromToken,
       toToken,
       fromAmount,
-      toAmount
-    });
+      toAmount,
+    })
     swiperRef.current.slideNext()
   }
 
@@ -124,6 +115,32 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
   const goPrev = () => {
     if (!swiperRef.current) return
     swiperRef.current.slidePrev()
+  }
+
+  const onFromTokenChange = (targetFromToken?: IConvertTokenList) => {
+    if (fromToken && targetFromToken?.address === fromToken.address) {
+      return
+    }
+    if (fromToken && targetFromToken && toToken && targetFromToken.address === toToken.address) {
+      setToToken(fromToken)
+      setFromToken(toToken)
+    } else {
+      setFromToken(targetFromToken)
+    }
+    setFromAmount('0')
+  }
+
+  const onToTokenChange = (targetToToken?: IConvertTokenList) => {
+    if (toToken && targetToToken?.address === toToken.address) {
+      return
+    }
+    if (toToken && fromToken && targetToToken && targetToToken.address === fromToken.address) {
+      setFromToken(toToken)
+      setToToken(fromToken)
+    } else {
+      setToToken(targetToToken)
+    }
+    setFromAmount('0')
   }
 
   return (
@@ -141,7 +158,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
       </Box>
       {debouncedInitDone ? (
         messageBody?.order_detail ? (
-          <ResultPart />
+          <ResultPart orderDetail={messageBody?.order_detail} />
         ) : (
           <Box
             sx={{
@@ -174,7 +191,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
               allowTouchMove={false}
               initialSlide={0}
               onSwiper={(swiper: SwiperClass) => {
-                //@ts-ignore
+                // @ts-ignore
                 swiperRef.current = swiper
               }}
               onSlideChange={handleSlideChange}
@@ -186,16 +203,16 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
               >
                 <StepOne
                   fromToken={fromToken}
-                  setFromToken={setFromToken}
+                  setFromToken={onFromTokenChange}
                   toToken={toToken}
-                  setToToken={setToToken}
+                  setToToken={onToTokenChange}
                   fromAmount={fromAmount}
                   setFromAmount={setFromAmount}
                   toAmount={toAmount}
                   exchangeRate={exchangeRate}
                   route={route}
-                  fromTokenList={fromTokenList}
-                  toTokenList={toTokenList}
+                  fromTokenList={convertTokenList}
+                  toTokenList={convertTokenList}
                 />
               </SwiperSlide>
 
@@ -204,14 +221,7 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
                   height: swiperIndex === 1 ? 'auto' : '0px',
                 }}
               >
-                <StepTwo
-                  fromToken={fromToken}
-                  toToken={toToken}
-                  fromAmount={fromAmount}
-                  toAmount={toAmount}
-                  exchangeRate={exchangeRate}
-                  fee={fee}
-                />
+                <StepTwo fromToken={fromToken} toToken={toToken} fromAmount={fromAmount} toAmount={toAmount} exchangeRate={exchangeRate} feeAmount={feeAmount} feeSymbol={feeSymbol} />
               </SwiperSlide>
             </Swiper>
             <Box

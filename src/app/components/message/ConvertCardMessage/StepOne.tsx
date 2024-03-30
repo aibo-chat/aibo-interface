@@ -10,10 +10,10 @@ import { IConvertTokenList } from '../../../hooks/aptos/useConvert'
 interface IStepOneProps {
   fromToken?: IConvertTokenList
   fromTokenList: Array<IConvertTokenList>
-  setFromToken: Dispatch<SetStateAction<IConvertTokenList | undefined>>
+  setFromToken: (token?: IConvertTokenList) => void
   toToken?: IConvertTokenList
   toTokenList: Array<IConvertTokenList>
-  setToToken: Dispatch<SetStateAction<IConvertTokenList | undefined>>
+  setToToken: (token?: IConvertTokenList) => void
   fromAmount: string
   setFromAmount: Dispatch<SetStateAction<string>>
   toAmount: string
@@ -24,7 +24,7 @@ interface IStepOneProps {
 interface IMySelectProps {
   selectedToken?: IConvertTokenList
   tokenList: Array<IConvertTokenList>
-  setSelectedToken: Dispatch<SetStateAction<IConvertTokenList | undefined>>
+  setSelectedToken: (token?: IConvertTokenList) => void
 }
 const MySelect: React.FC<IMySelectProps> = ({ selectedToken, tokenList, setSelectedToken }) => {
   const [tooltipOpen, setTooltipOpen] = useState<boolean>(false)

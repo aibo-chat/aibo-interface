@@ -56,27 +56,24 @@ const ConvertCardMessage: React.FC<IConvertCardMessageProps> = ({ timelineSet, m
 
   const { convertTokenList, estimateToAmount } = useConvert()
 
-  useDebounceEffect(
-    () => {
-      if (!fromToken?.address || !toToken?.address) return
-      if (!Number(fromAmount)) {
-        setToAmount('')
-        return
-      }
-      // 根据 fromAmount 调接口计算 toAmount
-      estimateToAmount({
-        from_token: fromToken.address,
-        to_token: toToken.address,
-        amount: valueToBigNumber(fromAmount).shiftedBy(fromToken.decimals).toFixed(0, 1),
-      })
-      const data = new BigNumber(fromAmount || 0).times(1.5).toString()
-      setToAmount(data)
-    },
-    [fromAmount, fromToken?.address, toToken?.address],
-    {
-      wait: 300,
-    },
-  )
+  useDebounceEffect(() => {
+    if (!fromToken?.address || !toToken?.address) return
+    if (!Number(fromAmount)) {
+      setToAmount('')
+      return
+    }
+    //根据 fromAmount 调接口计算 toAmount
+    estimateToAmount({
+      from_token: fromToken.address,
+      to_token: toToken.address,
+      amount: valueToBigNumber(fromAmount).shiftedBy(fromToken.decimals).toFixed(0, 1)
+    })
+
+    const data = new BigNumber(fromAmount || 0).times(1.5).toString()
+    setToAmount(data)
+  }, [fromAmount, fromToken?.address, toToken?.address], {
+    wait: 300
+  })
 
   const exchangeRate = useMemo(() => (fromAmount && toAmount && !new BigNumber(fromAmount).isZero() ? new BigNumber(toAmount).div(fromAmount).toFormat(4) : '0'), [fromAmount, toAmount])
   const route = useMemo(() => [fromToken?.symbol, toToken?.symbol], [fromToken?.symbol, toToken?.symbol])
